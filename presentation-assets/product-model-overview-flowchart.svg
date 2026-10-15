@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1680 560" width="1680" height="560" font-family="Segoe UI, Inter, Helvetica Neue, Arial, sans-serif">
+  <title>LouNgak AI — how a question becomes a field decision</title>
+  <desc>Five-stage workflow: ask or select, interpret and route, gather evidence, assess the risk, show and explain.</desc>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+
+  <rect width="1680" height="560" fill="#FFFFFF"/>
+
+  <!-- ============ Stage 1 · Ask or select ============ -->
+  <rect x="40" y="36" width="272" height="392" rx="14" fill="#F1F8F4" stroke="#1B7F4F" stroke-width="2"/>
+  <rect x="64" y="60" width="30" height="30" rx="9" fill="#1B7F4F"/>
+  <text x="79" y="81" font-size="17" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
+  <text x="106" y="81" font-size="19" font-weight="700" fill="#1B7F4F">Ask or select</text>
+
+  <text x="64" y="132" font-size="15" font-weight="600" fill="#1F2937">Question in English</text>
+  <text x="64" y="154" font-size="15" font-weight="600" fill="#1F2937">or Manipuri</text>
+  <text x="64" y="176" font-size="13.5" fill="#64748B">Latin or Meitei Mayek script</text>
+
+  <text x="64" y="224" font-size="15" font-weight="600" fill="#1F2937">Or pick a monitored zone</text>
+  <text x="64" y="246" font-size="15" font-weight="600" fill="#1F2937">or draw an area</text>
+  <text x="64" y="268" font-size="13.5" fill="#64748B">7 demo zones over Manipur</text>
+  <text x="64" y="288" font-size="13.5" fill="#64748B">valley farmland</text>
+
+  <!-- ============ Stage 2 · Interpret and route ============ -->
+  <rect x="372" y="36" width="272" height="392" rx="14" fill="#EFF9F7" stroke="#0F766E" stroke-width="2"/>
+  <rect x="396" y="60" width="30" height="30" rx="9" fill="#0F766E"/>
+  <text x="411" y="81" font-size="17" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
+  <text x="438" y="81" font-size="19" font-weight="700" fill="#0F766E">Interpret &amp; route</text>
+
+  <text x="396" y="132" font-size="15" font-weight="600" fill="#1F2937">Rule-based intent and</text>
+  <text x="396" y="154" font-size="15" font-weight="600" fill="#1F2937">language detection</text>
+  <text x="396" y="176" font-size="13.5" fill="#64748B">Deterministic — no model guess</text>
+
+  <text x="396" y="214" font-size="13" font-weight="700" fill="#0F766E" letter-spacing="0.6">ROUTED TO</text>
+  <rect x="396" y="226" width="224" height="27" rx="8" fill="#FFFFFF" stroke="#99CFC8"/>
+  <text x="408" y="244" font-size="13.5" fill="#1F2937">Crop &amp; pest risk engine</text>
+  <rect x="396" y="259" width="224" height="27" rx="8" fill="#FFFFFF" stroke="#99CFC8"/>
+  <text x="408" y="277" font-size="13.5" fill="#1F2937">Weather forecast</text>
+  <rect x="396" y="292" width="224" height="27" rx="8" fill="#FFFFFF" stroke="#99CFC8"/>
+  <text x="408" y="310" font-size="13.5" fill="#1F2937">Satellite imagery / NDVI</text>
+
+  <text x="396" y="350" font-size="13.5" fill="#64748B">Mixed or unclear question:</text>
+  <text x="396" y="370" font-size="13.5" fill="#64748B">asked to rephrase, never guessed</text>
+
+  <!-- ============ Stage 3 · Gather evidence ============ -->
+  <rect x="704" y="36" width="272" height="392" rx="14" fill="#EFF6FC" stroke="#1E6FA8" stroke-width="2"/>
+  <rect x="728" y="60" width="30" height="30" rx="9" fill="#1E6FA8"/>
+  <text x="743" y="81" font-size="17" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
+  <text x="770" y="81" font-size="19" font-weight="700" fill="#1E6FA8">Gather evidence</text>
+
+  <text x="728" y="132" font-size="15" font-weight="600" fill="#1F2937">Weather — Open-Meteo</text>
+  <text x="728" y="154" font-size="13.5" fill="#64748B">14 d history + 7 d forecast, hourly</text>
+
+  <text x="728" y="202" font-size="15" font-weight="600" fill="#1F2937">NDVI — Sentinel-2</text>
+  <text x="728" y="224" font-size="13.5" fill="#64748B">Copernicus; 30-day window</text>
+  <text x="728" y="244" font-size="13.5" fill="#64748B">against a 3-year baseline</text>
+
+  <text x="728" y="292" font-size="15" font-weight="600" fill="#1F2937">Pest reports — SAMPLE</text>
+  <text x="728" y="314" font-size="13.5" fill="#64748B">synthetic and clearly labelled,</text>
+  <text x="728" y="334" font-size="13.5" fill="#64748B">pending real surveillance data</text>
+
+  <text x="728" y="380" font-size="13.5" fill="#64748B">Cached; each source fails</text>
+  <text x="728" y="400" font-size="13.5" fill="#64748B">independently</text>
+
+  <!-- ============ Stage 4 · Assess the risk ============ -->
+  <rect x="1036" y="36" width="272" height="392" rx="14" fill="#FDF6EC" stroke="#B45309" stroke-width="2"/>
+  <rect x="1060" y="60" width="30" height="30" rx="9" fill="#B45309"/>
+  <text x="1075" y="81" font-size="17" font-weight="700" fill="#FFFFFF" text-anchor="middle">4</text>
+  <text x="1102" y="81" font-size="19" font-weight="700" fill="#B45309">Assess the risk</text>
+
+  <text x="1060" y="128" font-size="13" font-weight="700" fill="#B45309" letter-spacing="0.6">WEIGHTED FACTORS</text>
+  <rect x="1060" y="140" width="224" height="28" rx="8" fill="#FFFFFF" stroke="#E4C08A"/>
+  <text x="1072" y="159" font-size="13.5" fill="#1F2937">Weather-pest rules</text>
+  <text x="1272" y="159" font-size="13.5" font-weight="700" fill="#B45309" text-anchor="end">0.5</text>
+  <rect x="1060" y="174" width="224" height="28" rx="8" fill="#FFFFFF" stroke="#E4C08A"/>
+  <text x="1072" y="193" font-size="13.5" fill="#1F2937">NDVI anomaly</text>
+  <text x="1272" y="193" font-size="13.5" font-weight="700" fill="#B45309" text-anchor="end">0.3</text>
+  <rect x="1060" y="208" width="224" height="28" rx="8" fill="#FFFFFF" stroke="#E4C08A"/>
+  <text x="1072" y="227" font-size="13.5" fill="#1F2937">Pest reports (SAMPLE)</text>
+  <text x="1272" y="227" font-size="13.5" font-weight="700" fill="#B45309" text-anchor="end">0.2</text>
+
+  <text x="1060" y="276" font-size="15" font-weight="600" fill="#1F2937">Missing input is left out,</text>
+  <text x="1060" y="298" font-size="15" font-weight="600" fill="#1F2937">never estimated</text>
+  <text x="1060" y="320" font-size="13.5" fill="#64748B">so losing data cannot raise a score</text>
+
+  <text x="1060" y="364" font-size="15" font-weight="600" fill="#1F2937">Score 0–100, risk level</text>
+  <text x="1060" y="386" font-size="15" font-weight="600" fill="#1F2937">and data completeness</text>
+  <text x="1060" y="408" font-size="13.5" fill="#64748B">Prototype thresholds, not validated</text>
+
+  <!-- ============ Stage 5 · Show and explain ============ -->
+  <rect x="1368" y="36" width="272" height="392" rx="14" fill="#F4F6F8" stroke="#334155" stroke-width="2"/>
+  <rect x="1392" y="60" width="30" height="30" rx="9" fill="#334155"/>
+  <text x="1407" y="81" font-size="17" font-weight="700" fill="#FFFFFF" text-anchor="middle">5</text>
+  <text x="1434" y="81" font-size="19" font-weight="700" fill="#334155">Show &amp; explain</text>
+
+  <text x="1392" y="132" font-size="15" font-weight="600" fill="#1F2937">Zones coloured by</text>
+  <text x="1392" y="154" font-size="15" font-weight="600" fill="#1F2937">risk level on the map</text>
+
+  <text x="1392" y="202" font-size="15" font-weight="600" fill="#1F2937">Districts ranked as</text>
+  <text x="1392" y="224" font-size="15" font-weight="600" fill="#1F2937">administrative context</text>
+  <text x="1392" y="246" font-size="13.5" fill="#64748B">a district is never itself scored</text>
+
+  <text x="1392" y="294" font-size="15" font-weight="600" fill="#1F2937">Score breakdown, reasons</text>
+  <text x="1392" y="316" font-size="15" font-weight="600" fill="#1F2937">and data provenance</text>
+  <text x="1392" y="338" font-size="13.5" fill="#64748B">every figure traceable to its source</text>
+
+  <text x="1392" y="386" font-size="15" font-weight="700" fill="#1B7F4F">Which zone to inspect first</text>
+  <text x="1392" y="408" font-size="13.5" fill="#64748B">answered in the asker's language</text>
+
+  <!-- ============ Arrows ============ -->
+  <line x1="324" y1="232" x2="360" y2="232" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="656" y1="232" x2="692" y2="232" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="988" y1="232" x2="1024" y2="232" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="1320" y1="232" x2="1356" y2="232" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- ============ Honest disclosure strip ============ -->
+  <rect x="40" y="458" width="1600" height="62" rx="10" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <rect x="40" y="458" width="5" height="62" rx="2.5" fill="#B45309"/>
+  <text x="66" y="483" font-size="13.5" fill="#475569">
+    <tspan font-weight="700" fill="#B45309">Prototype</tspan>
+    <tspan> · synthetic pest reports · unvalidated thresholds — decision support for field inspection, not a validated prediction or a confirmed outbreak.</tspan>
+  </text>
+  <text x="66" y="505" font-size="13.5" fill="#475569">NDVI indicates vegetation vigour, not a disease diagnosis. No pest-detection model is trained or claimed; pest risk is inferred from weather rules, NDVI change and reports.</text>
+</svg>
