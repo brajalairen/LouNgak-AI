@@ -71,6 +71,10 @@ for the risk-engine parameters.
 The commands are for Windows PowerShell. On Linux or macOS, use `.venv/bin/python` instead of
 `.venv\Scripts\python` and `cp` instead of `Copy-Item`.
 
+On Windows, clone into a short path such as `D:\LouNgak-AI`: the evaluation test split has file paths up to 100
+characters long, which exceeds Windows' 260-character limit inside a deep folder. Alternatively, run
+`git config --global core.longpaths true` before cloning.
+
 ```powershell
 git clone https://github.com/brajalairen/LouNgak-AI.git
 cd LouNgak-AI
@@ -124,7 +128,9 @@ never commit real credentials. Start from `.env.example`, which lists every sett
 
 **Copernicus credentials:** create a free account at [dataspace.copernicus.eu](https://dataspace.copernicus.eu),
 open the Sentinel Hub dashboard, go to **User settings → OAuth clients**, create a client, and copy its ID and
-secret into your `.env` (the secret is shown only once). Without them the app still runs: the risk engine scores
+secret into your `.env` (the secret is shown only once). If you have no account, leave both values empty: the
+placeholder values from `.env.example` are sent as credentials, rejected, and reported as such in every NDVI
+result. Without credentials the app still runs: the risk engine scores
 zones from weather and pest reports with lower data completeness, and imagery questions about a drawn area explain
 that retrieval is not configured. Uploaded GeoTIFFs and the built-in imagery examples keep working.
 
