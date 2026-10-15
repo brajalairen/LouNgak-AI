@@ -198,7 +198,7 @@ def test_rate_limiting_is_surfaced_as_its_own_error(monkeypatch, provider):
 @pytest.mark.parametrize("bbox, expected", [
     ((73.0, 19.0, 72.9, 19.1), AreaInvalid),      # west >= east
     ((72.9, 19.1, 73.0, 19.0), AreaInvalid),      # south >= north
-    ((72.9, 19.0, 72.9, 19.0), AreaInvalid),      # a point encloses nothing (D-025)
+    ((72.9, 19.0, 72.9, 19.0), AreaInvalid),      # a point encloses nothing
     ((-200.0, 19.0, 73.0, 19.1), AreaInvalid),    # outside valid longitude
     ((60.0, 10.0, 80.0, 30.0), AreaTooLarge),     # far above the km2 limit
 ])

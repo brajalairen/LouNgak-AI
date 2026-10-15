@@ -132,7 +132,7 @@ class HourlyWeatherClient:
         params = {"latitude": latitude, "longitude": longitude, "timezone": "auto", "past_days": PAST_DAYS,
                   "forecast_days": FORECAST_DAYS, "hourly": ",".join(HOURLY)}
         try:
-            with httpx.Client(timeout=self.timeout, headers={"User-Agent": "SatQuery AG-04 prototype"}) as client:
+            with httpx.Client(timeout=self.timeout, headers={"User-Agent": "LouNgak-AI/0.1 (+https://github.com/brajalairen/LouNgak-AI)"}) as client:
                 response = client.get(FORECAST_URL, params=params)
         except httpx.TimeoutException as error:
             raise WeatherTimeout("The weather provider did not respond in time.") from error

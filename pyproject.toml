@@ -5,9 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "satquery"
 version = "0.1.0"
-description = "SatQuery AI (SIH26167): agentic vision-language assistant for remote-sensing image analysis"
+description = "LouNgak AI: crop & pest risk monitoring and natural-language satellite imagery analysis"
 readme = "README.md"
-# HF ZeroGPU supports Python 3.10.13 and 3.12.12 only (D-020).
+# HF ZeroGPU supports Python 3.10.13 and 3.12.12 only.
 requires-python = ">=3.10,<3.13"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
@@ -21,18 +21,18 @@ dependencies = [
 
 [project.optional-dependencies]
 ui = ["gradio>=5.20,<6"]
-# Map-first React frontend (D-023): FastAPI serves the built web/ bundle and wraps analyze().
+# Map-first React frontend: FastAPI serves the built web/ bundle and wraps analyze().
 server = ["fastapi>=0.115", "uvicorn[standard]>=0.30", "python-multipart>=0.0.9"]
 models = [
-  "torch>=2.8,<2.9",            # Hugging Face ZeroGPU (app.py) needs 2.8+ (D-020)
-  "transformers==4.49.0",       # Falcon remote code lacks GenerationMixin: must stay < 4.50 (D-021)
+  "torch>=2.8,<2.9",            # Hugging Face ZeroGPU (app.py) needs 2.8+
+  "transformers==4.49.0",       # Falcon remote code lacks GenerationMixin: must stay < 4.50
   "timm==1.0.15",
   "einops>=0.8",
   "huggingface_hub>=0.26,<1.0",
 ]
 dev = ["pytest>=8"]  # the tests also import fastapi and httpx (server and copernicus extras)
-# SIH R5 LoRA adaptation (D-027). Install with --no-deps: peft resolves its own transformers floor,
-# and letting it move transformers past 4.50 breaks Falcon's remote code (D-021).
+# LoRA adaptation of the vision-language model. Install with --no-deps: peft resolves its own transformers floor,
+# and letting it move transformers past 4.50 breaks Falcon's remote code.
 adaptation = ["peft==0.17.1", "accelerate==1.10.1"]
 # Copernicus Data Space imagery retrieval. httpx: HTTP client; python-dotenv: reads the
 # gitignored .env holding COPERNICUS_CLIENT_ID / COPERNICUS_CLIENT_SECRET.

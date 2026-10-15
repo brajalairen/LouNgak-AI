@@ -20,7 +20,7 @@ from satquery.agri import areas as geometry
 from satquery.agri.config import ASSETS
 from satquery.agri.models import MonitoredArea, PestReport, Provenance, SampleReportSet
 
-SOURCE = "SatQuery sample-report generator (seeded, deterministic)"
+SOURCE = "LouNgak AI sample-report generator (seeded, deterministic)"
 NOTE = "SYNTHETIC reports for prototype demonstration only; not real government or field observations."
 
 

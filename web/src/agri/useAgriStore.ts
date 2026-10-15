@@ -1,4 +1,4 @@
-/** AG-04 dashboard state: what the risk engine said (fetched from /api/agri/*) and what the user is
+/** Risk dashboard state: what the risk engine said (fetched from /api/agri/*) and what the user is
  *  looking at. It holds server results only; it never computes a risk figure itself. */
 
 import { create } from "zustand";

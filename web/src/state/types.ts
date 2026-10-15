@@ -13,7 +13,7 @@ export type TaskType =
   | "change_analysis"
   | "cross_modal_analysis"
   | "weather_forecast"
-  /** AG-04: vegetation vigour from NDVI (red + NIR), never a VLM guess. */
+  /** Crop health: vegetation vigour from NDVI (red + NIR), never a VLM guess. */
   | "crop_health";
 export type Severity = "error" | "warning";
 export type StepStatus = "ok" | "failed" | "skipped";
@@ -170,7 +170,7 @@ export interface WeatherInfo {
 
 /** Which specialist a question is for. Mirrors satquery.server.RouteResult. */
 export interface RouteResult {
-  /** "agri": a crop & pest risk question, answered by the AG-04 risk engine (/api/agri/query). */
+  /** "agri": a crop & pest risk question, answered by the risk engine (/api/agri/query). */
   route: "weather" | "imagery" | "mixed" | "agri";
   rule: string;
   /** For "mixed": what to do instead. */
@@ -284,7 +284,7 @@ export interface OpticalQualityInfo {
   /** Cloud, cloud shadow or no data, as a share of the selected area. */
   affected_fraction: number;
   class_fractions: Record<string, number>;
-  /** The configured limit: a SatQuery heuristic, not a scientific constant. */
+  /** The configured limit: an operating heuristic, not a scientific constant. */
   max_affected_fraction: number;
   min_clear_pixels: number;
   usable: boolean;
@@ -328,7 +328,7 @@ export interface RetrievalProblem {
   detail?: string;
 }
 
-/* ------------------------------------------------------------------ AG-04 crop & pest risk
+/* ------------------------------------------------------------------ crop & pest risk
  * Mirrors satquery/agri/models.py and satquery/agri/routes.py. Every figure here is computed by the
  * risk engine on the server; the dashboard only presents it. */
 

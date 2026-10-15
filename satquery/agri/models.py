@@ -1,4 +1,4 @@
-"""Data contracts of the agricultural risk engine (AG-04).
+"""Data contracts of the agricultural risk engine.
 
 Every number that reaches a user carries where it came from (`Provenance`) and in what state it is:
 LIVE (fetched now), CACHED (fetched earlier, with its time), SAMPLE (synthetic, prototype only) or

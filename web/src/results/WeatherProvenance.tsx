@@ -2,7 +2,7 @@
  *
  *  A forecast is for one point, and a drawn area can be large, so the card names the point (also
  *  marked on the map) and the area it stands for. The attribution is required by the data licence
- *  (CC BY 4.0) and is always shown. Weather is an optional capability, not an SIH requirement. */
+ *  (CC BY 4.0) and is always shown. Weather is an optional capability. */
 
 import { useAppStore } from "../state/useAppStore";
 

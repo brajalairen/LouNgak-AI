@@ -1,4 +1,4 @@
-"""Live checks of the AG-04 data sources. Deselected by default; run with `pytest -m live` (uses quota)."""
+"""Live checks of the agricultural data sources. Deselected by default; run with `pytest -m live` (uses quota)."""
 
 from datetime import datetime, timezone
 

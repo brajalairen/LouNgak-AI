@@ -8,7 +8,7 @@ import { Button, cx, inputClass, Surface } from "../ui/primitives";
 
 const TOOLS: { mode: Exclude<DrawMode, null>; label: string; icon: typeof Square; hint: string }[] = [
   // Every tool encloses an area: the analysis restricts itself to the pixels inside the shape, so a
-  // single point has nothing to offer here (D-025).
+  // single point has nothing to offer here.
   { mode: "rectangle", label: "Rectangle", icon: Square, hint: "Press and drag across the map, then release" },
   { mode: "polygon", label: "Polygon", icon: Hexagon, hint: "Click each corner, then click the first again" },
   { mode: "circle", label: "Circle", icon: Circle, hint: "Press at the centre, drag outward, then release" },

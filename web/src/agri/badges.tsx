@@ -1,4 +1,4 @@
-/** Small, consistent labels for the AG-04 dashboard. Every risk level, data state and sample or
+/** Small, consistent labels for the risk dashboard. Every risk level, data state and sample or
  *  placeholder notice is printed in words beside any colour, so nothing depends on colour alone. */
 
 import { AlertTriangle, FlaskConical } from "lucide-react";

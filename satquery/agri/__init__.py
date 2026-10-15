@@ -1,4 +1,4 @@
-"""AG-04 agricultural risk intelligence: data layer and explainable crop & pest risk engine.
+"""Agricultural risk intelligence: data layer and explainable crop & pest risk engine.
 
   areas.py     monitored areas (districts, a user's own areas, demo rectangles) and geometry
   weather.py   hourly weather: ~14 days of recent history + 7-day forecast (Open-Meteo)

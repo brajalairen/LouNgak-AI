@@ -4,7 +4,7 @@
  *
  *  Rectangle and circle are press-drag-release, like a selection tool in any drawing program: the
  *  shape follows the cursor while the button is held and is finished on release. Polygon is
- *  click-per-corner, having no natural drag. Every tool encloses an area (D-025). */
+ *  click-per-corner, having no natural drag. Every tool encloses an area. */
 
 import { useEffect, useRef } from "react";
 import {

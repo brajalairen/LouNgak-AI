@@ -9,7 +9,7 @@ from pathlib import Path
 
 EXAMPLES_DIR = Path(__file__).resolve().parent.parent / "demo" / "examples"
 
-EXAMPLE_QUERIES = [  # representative queries from the SIH problem statement
+EXAMPLE_QUERIES = [  # representative imagery questions
     "Describe the land-cover and major objects visible in this image.",
     "Highlight the water body in this image.",
     "What changed between these two dates, and where did the change occur?",

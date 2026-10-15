@@ -1,4 +1,4 @@
-"""The single entry point shared by the UI, CLI and tests (D-005): analyze(request) -> response."""
+"""The single entry point shared by the UI, CLI and tests: analyze(request) -> response."""
 
 import threading
 import time
@@ -193,7 +193,7 @@ def analyze(request: AnalysisRequest, settings: Settings | None = None, vlm: VLM
 
 def answer_weather(query: str, area: dict | None, *, area_source: str = "drawn area", settings: Settings | None = None,
                    backend: WeatherBackend | None = None) -> AnalysisResponse:
-    """A weather question about a drawn area (D-029: optional capability, not an SIH requirement).
+    """A weather question about a drawn area (an optional capability).
 
     The same intent -> plan -> execute -> aggregate path, trace and reports as `analyze`, with no
     imagery: the area's representative point is forecast by the `weather.forecast` tool. Refusals
@@ -239,7 +239,7 @@ def answer_weather(query: str, area: dict | None, *, area_source: str = "drawn a
     trace.intent = intent
     if horizon.unsupported:
         return reject("forecast_horizon_unsupported",
-                      f'"{horizon.phrase}" cannot be forecast: {horizon.unsupported}. SatQuery gives short-range '
+                      f'"{horizon.phrase}" cannot be forecast: {horizon.unsupported}. LouNgak AI gives short-range '
                       "forecasts only, from today up to 16 days ahead, and does not estimate long-range, seasonal or "
                       "past weather.")
 

@@ -35,7 +35,7 @@ MIRRORED = {
     "RouteResult": server.RouteResult,
     "OpticalQualityInfo": server.OpticalQualityInfo,
     "SceneCheck": server.SceneCheck,
-    # AG-04 risk dashboard
+    # Crop & pest risk dashboard
     "AgriProvenance": agri_models.Provenance,
     "PestReport": agri_models.PestReport,
     "DayCheck": agri_models.DayCheck,

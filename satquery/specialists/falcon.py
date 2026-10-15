@@ -1,4 +1,4 @@
-"""Falcon-Single-Instruction-Large (0.7B remote-sensing VLM) backend: D-021.
+"""Falcon-Single-Instruction-Large (0.7B remote-sensing VLM) backend.
 
 Prompts and output parsing follow TianHuiLab/Falcon's README and inference.py:
 coordinates are 1000x1000 bins dequantised to bin centres; bi-temporal change detection
@@ -98,7 +98,7 @@ def to_single_frame(polygons: list[list[float]], width: int, height: int) -> lis
 class FalconVLM:
     def __init__(self, model_id: str, device: str = "auto", num_beams: int = 3, max_new_tokens: int = 1024,
                  adapter: str = ""):
-        # With an adapter, model_id names both parts, so every execution trace shows what actually ran (D-027).
+        # With an adapter, model_id names both parts, so every execution trace shows what actually ran.
         self.model_id = f"{model_id} + {adapter}" if adapter else model_id
         self.base_model_id = model_id
         self.adapter = adapter

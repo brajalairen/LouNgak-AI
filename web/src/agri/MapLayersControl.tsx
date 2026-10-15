@@ -1,4 +1,4 @@
-/** Layers: the base map, plus the AG-04 map layers. Presentation only: hiding a layer never changes a
+/** Layers: the base map, plus the crop & pest risk layers. Presentation only: hiding a layer never changes a
  *  figure, and the analysis never sees the base map. Replaces the basemap-only picker.
  *
  *  Only layers backed by data are offered. District outlines stay disabled, with the reason, until

@@ -1,6 +1,6 @@
-"""Weather forecasts from Open-Meteo: the backend of the `weather.forecast` tool (D-029).
+"""Weather forecasts from Open-Meteo: the backend of the `weather.forecast` tool.
 
-An OPTIONAL product enhancement, not an SIH requirement. Short range only: up to 16 days.
+An optional capability. Short range only: up to 16 days.
 
 Open-Meteo (checked 2026-09-27): free for non-commercial use without an API key (600 calls/min,
 10,000/day), data under CC BY 4.0, so the attribution travels with every answer. OPEN_METEO_API_KEY
@@ -239,7 +239,7 @@ class OpenMeteoWeather:
     def _client(self):
         import httpx
 
-        return httpx.Client(timeout=self.timeout, headers={"User-Agent": "SatQuery (SIH26167 prototype)"})
+        return httpx.Client(timeout=self.timeout, headers={"User-Agent": "LouNgak-AI/0.1 (+https://github.com/brajalairen/LouNgak-AI)"})
 
     def forecast(self, latitude: float, longitude: float) -> Forecast:
         key = (round(latitude, 2), round(longitude, 2))

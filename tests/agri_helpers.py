@@ -1,4 +1,4 @@
-"""Shared builders for the AG-04 tests: synthetic weather, fake Statistical API, areas, configs.
+"""Shared builders for the agricultural risk tests: synthetic weather, fake Statistical API, areas, configs.
 
 Nothing here touches the network: weather payloads are built hour by hour, and the NDVI provider
 returns statistics chosen by each test.

@@ -1,4 +1,4 @@
-"""Visual evidence overlays and downloadable HTML/JSON reports (D-011)."""
+"""Visual evidence overlays and downloadable HTML/JSON reports."""
 
 import base64
 import html
@@ -116,11 +116,11 @@ def write_reports(response: AnalysisResponse, run_dir: Path) -> tuple[str, str]:
     confidence = response.confidence
     confidence_text = (f"{confidence.value if confidence.value is not None else 'n/a'} ({esc(confidence.method)})"
                        + (f"<br><i>{esc(confidence.note)}</i>" if confidence.note else "")) if confidence else "n/a"
-    page = f"""<!doctype html><html><head><meta charset="utf-8"><title>SatQuery report {esc(trace.run_id)}</title>
+    page = f"""<!doctype html><html><head><meta charset="utf-8"><title>LouNgak AI report {esc(trace.run_id)}</title>
 <style>body{{font-family:system-ui,sans-serif;max-width:1000px;margin:24px auto;padding:0 16px;color:#222}}
 table{{border-collapse:collapse;width:100%;font-size:13px}}td,th{{border:1px solid #ddd;padding:4px 6px;text-align:left}}
 figure{{margin:12px 0}}.answer{{background:#f3f7ff;padding:12px;border-radius:6px;white-space:pre-line}}</style></head><body>
-<h1>SatQuery AI: analysis report</h1>
+<h1>LouNgak AI: analysis report</h1>
 <p><b>Run</b> {esc(trace.run_id)} · {esc(trace.created_at)} · status <b>{esc(response.status)}</b></p>
 <p><b>Query:</b> {esc(trace.query)}</p>
 <p><b>Input configuration:</b> {esc(trace.input_config)} · <b>Task:</b> {esc(response.task)}

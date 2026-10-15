@@ -17,7 +17,7 @@ from satquery.agri.models import MonitoredArea
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/reverse"
 SOURCE = "OpenStreetMap Nominatim reverse geocoding"
 LICENCE = "© OpenStreetMap contributors, ODbL"
-USER_AGENT = "SatQuery-AG04-prototype (AI4SEVA hackathon 2026)"
+USER_AGENT = "LouNgak-AI/0.1 (+https://github.com/brajalairen/LouNgak-AI)"
 
 
 class ReverseGeocoder:

@@ -29,7 +29,7 @@ def _load_env_file() -> None:
 @dataclass(frozen=True)
 class Settings:
     vlm_backend: str = "fake"  # "falcon" (real model) or "fake" (deterministic, for tests/dev)
-    falcon_model_id: str = "mehmetbayik/Falcon-Single-Instruction-Large"  # provenance: decision D-021
+    falcon_model_id: str = "mehmetbayik/Falcon-Single-Instruction-Large"
     falcon_adapter: str = DEFAULT_ADAPTER  # LoRA adapter path or HF repo id; empty means the unadapted base model
     device: str = "auto"  # "auto", "cuda" or "cpu"
     num_beams: int = 3
@@ -46,22 +46,22 @@ class Settings:
     copernicus_max_aoi_km2: float = 400.0  # a larger drawn area is refused before any API call
     copernicus_resolution_m: float = 10.0  # Sentinel-2 native for B02/B03/B04/B08
     # A retrieved optical scene is judged unusable for a water question, and Sentinel-1 radar is
-    # fetched instead (D-030), when at least this share of the SELECTED AREA is cloud, cloud shadow
+    # fetched instead, when at least this share of the SELECTED AREA is cloud, cloud shadow
     # or no data by Sentinel-2's own scene classification, or when fewer clear pixels remain than
-    # the minimum. SatQuery operating heuristics, not scientific constants: tune them here.
+    # the minimum. Operating heuristics, not scientific constants: tune them here.
     optical_max_affected_fraction: float = 0.20
     optical_min_clear_pixels: int = 256  # 16 x 16, the smallest image the pipeline analyses
-    # Crop health (AG-04): how many recent scenes may be judged by the area's own scene classification
+    # Crop health: how many recent scenes may be judged by the area's own scene classification
     # (one cheap band each) before the question is refused. Bands are downloaded for one scene only.
     optical_max_scenes_checked: int = 4
 
-    # --- weather forecasts (optional capability, D-029; not an SIH requirement) ---
+    # --- weather forecasts (optional capability) ---
     weather_provider: str = "open-meteo"  # "open-meteo" or "off"
     open_meteo_api_key: str = ""          # secret, paid customer endpoint only; never logged or returned
     weather_cache_ttl_s: float = 1800.0   # a forecast is reused for this long, in memory only
     weather_timeout_s: float = 20.0
 
-    # --- AG-04 agricultural risk dashboard ---
+    # --- crop & pest risk dashboard ---
     agri_areas: str = "demo"         # "demo" (the team's demo rectangles) or a GeoJSON file of monitored areas
     agri_offline: bool = False       # serve cached agricultural data only (no network), labelled CACHED
     agri_refresh_s: float = 1800.0   # how long one assessment of all areas is reused before it is recomputed

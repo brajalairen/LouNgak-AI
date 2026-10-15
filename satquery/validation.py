@@ -1,4 +1,4 @@
-"""Deterministic input validation (D-008). Its errors are authoritative: routing never overrides them."""
+"""Deterministic input validation. Its errors are authoritative: routing never overrides them."""
 
 from datetime import date
 from pathlib import Path
@@ -31,7 +31,7 @@ def check_request(request: AnalysisRequest) -> list[ValidationIssue]:
                                 f"{path.name}: use GeoTIFF/TIFF (or PNG/JPEG for benchmark images).", image_index=i))
         elif path.suffix.lower() in PLAIN_SUFFIXES:
             issues.append(issue("non_geospatial_format", f"{path.name}: PNG/JPEG carry no georeferencing; "
-                                "SIH accepts them only for benchmark datasets.", "warning", i))
+                                "they are accepted only for benchmark images.", "warning", i))
     return issues
 
 
@@ -81,7 +81,7 @@ def _check_pair(first: RasterImage, second: RasterImage) -> list[ValidationIssue
     issues = []
     if (first.height, first.width) != (second.height, second.width):
         issues.append(issue("grid_shape_mismatch", f"Pair must share a pixel grid: {first.width}x{first.height} vs "
-                            f"{second.width}x{second.height}. Co-registration is not performed (D-008)."))
+                            f"{second.width}x{second.height}. Co-registration is not performed."))
     if first.crs and second.crs and first.crs != second.crs:
         issues.append(issue("crs_mismatch", f"Pair uses different CRS: {first.crs} vs {second.crs}."))
     elif (first.crs is None) != (second.crs is None):
@@ -99,7 +99,7 @@ def _check_pair(first: RasterImage, second: RasterImage) -> list[ValidationIssue
             issues.append(issue("grid_resolution_mismatch",
                                 f"Pair pixel sizes differ ({abs(a1):g} x {abs(e1):g} vs {abs(a2):g} x {abs(e2):g} CRS units), "
                                 f"so the grids diverge by {drift_px:.1f} px across the image; images are not co-registered. "
-                                "Resampling is not performed (D-008)."))
+                                "Resampling is not performed."))
         elif offset_px > GRID_TOLERANCE_PX:
             issues.append(issue("grid_offset", f"Pair grids are offset by {offset_px:.1f} px; images are not co-registered."))
     same_shape = (first.height, first.width) == (second.height, second.width)

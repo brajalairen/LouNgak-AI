@@ -1,4 +1,4 @@
-"""Build the BigEarthNet.txt VQA training set for SatQuery AI's LoRA adaptation.
+"""Build the BigEarthNet.txt VQA training set for LouNgak AI's LoRA adaptation.
 
 Selects patches from BigEarthNet.txt.parquet (9.55M rows), renders each to RGB with the SAME
 path the app uses at inference (satquery.imaging.load_image -> render_rgb), and writes one

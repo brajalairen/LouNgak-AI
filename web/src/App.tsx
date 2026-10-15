@@ -29,7 +29,7 @@ export default function App() {
 
   useEffect(() => applyTheme(theme), [theme]);
 
-  // AG-04: the risk engine's assessment of every monitored area, the dashboard's starting point.
+  // The risk engine's assessment of every monitored area, the dashboard's starting point.
   const loadRisk = useAgriStore((s) => s.load);
   useEffect(() => {
     void loadRisk();

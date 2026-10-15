@@ -1,4 +1,4 @@
-"""Golden routing cases, starting with the representative queries in the SIH problem statement."""
+"""Golden routing cases, starting with the representative imagery questions."""
 
 import pytest
 

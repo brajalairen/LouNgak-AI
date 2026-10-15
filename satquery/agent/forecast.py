@@ -1,4 +1,4 @@
-"""What a weather question asks about: the period and the focus (D-029, optional capability).
+"""What a weather question asks about: the period and the focus (optional capability).
 
 The period is kept abstract ("tomorrow", "Friday", "the next 7 days") and resolved only once the
 forecast arrives, against the location's own calendar: "tomorrow" in Mumbai is not tomorrow on the

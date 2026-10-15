@@ -1,4 +1,4 @@
-"""Headless entry point (D-013). Examples:
+"""Headless entry point. Examples:
 
     python -m satquery ask --image scene.tif --modality optical --query "Describe the land cover."
     python -m satquery ask --image t1.tif --modality optical --image t2.tif --modality optical \
@@ -13,7 +13,7 @@ from satquery.schemas import AnalysisRequest, ImageInput
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="satquery", description="SatQuery AI command-line interface")
+    parser = argparse.ArgumentParser(prog="satquery", description="LouNgak AI command-line interface")
     sub = parser.add_subparsers(dest="command", required=True)
     ask = sub.add_parser("ask", help="analyse 1-2 images with a natural-language query")
     ask.add_argument("--image", action="append", required=True, help="image path (repeat for a pair)")

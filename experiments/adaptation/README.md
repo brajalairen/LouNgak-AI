@@ -1,6 +1,6 @@
 # LoRA adaptation of Falcon on BigEarthNet.txt
 
-This folder holds the code and the recorded evidence for SatQuery AI's fine-tuned component: a LoRA adapter that
+This folder holds the code and the recorded evidence for LouNgak AI's fine-tuned component: a LoRA adapter that
 the team trained on **BigEarthNet.txt** yes/no questions about Sentinel-2 image patches. The adapter itself is in
 [`adapters/falcon-bigearthnet-vqa-lora/`](../../adapters/falcon-bigearthnet-vqa-lora/), and the app loads it by
 default.
@@ -11,13 +11,13 @@ files by `make_report.py`.
 ## What was adapted, and what was not
 
 The base model, [`mehmetbayik/Falcon-Single-Instruction-Large`](https://huggingface.co/mehmetbayik/Falcon-Single-Instruction-Large),
-was pre-trained on remote-sensing data by its own authors. This adapter is the part the SatQuery AI team trained:
+was pre-trained on remote-sensing data by its own authors. This adapter is the part trained for this project:
 
 - **Task: binary (yes/no) visual question answering** about Sentinel-2 patches: presence, count, area and adjacency
   of land-cover classes. Bounding-box rows need Falcon's coordinate-token grammar and were not trained.
 - **Data: BigEarthNet.txt** with BigEarthNet v2.0 Sentinel-2 patches (120 x 120 px, 10 m), rendered to RGB by the
   same code the app uses at inference (`satquery.imaging`).
-- **Not trained:** captioning, grounding, change detection, SAR, weather, or any other SatQuery AI capability. A
+- **Not trained:** captioning, grounding, change detection, SAR, weather, or any other LouNgak AI capability. A
   regression check on the demo scenarios found no degradation with the adapter on: identical grounding boxes, a
   change mask within 0.5%, and different but coherent captions (`results/regression_check.json`).
 

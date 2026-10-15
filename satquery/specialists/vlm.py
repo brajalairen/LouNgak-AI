@@ -1,4 +1,4 @@
-"""Vision-language model interface (D-005) and a deterministic fake backend.
+"""Vision-language model interface and a deterministic fake backend.
 
 Every backend takes uint8 RGB arrays (height, width, 3) and returns geometry in the pixel
 frame of the array it received. Backends: `falcon` (real, specialists/falcon.py) and `fake`.

@@ -1,4 +1,4 @@
-"""Gradio web UI (D-004/D-005): builds an AnalysisRequest, calls the analysis function, renders the response."""
+"""Gradio web UI: builds an AnalysisRequest, calls the analysis function, renders the response."""
 
 from collections.abc import Callable
 from pathlib import Path
@@ -47,9 +47,9 @@ def build_demo(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = ana
                   for f, m, d in ((file_a, modality_a, date_a), (file_b, modality_b, date_b)) if f]
         return _format(run_analysis(AnalysisRequest(query=query or "", images=images)))
 
-    with gr.Blocks(title="SatQuery AI") as demo:
-        gr.Markdown("# 🛰️ SatQuery AI\nAsk questions about satellite images. The agent validates the inputs, picks specialist "
-                    "tools, runs them, and shows its evidence, confidence, and full execution trace. *SIH26167 prototype.*")
+    with gr.Blocks(title="LouNgak AI") as demo:
+        gr.Markdown("# 🛰️ LouNgak AI\nAsk questions about satellite images. The agent validates the inputs, picks specialist "
+                    "tools, runs them, and shows its evidence, confidence, and full execution trace. *Prototype.*")
         with gr.Row():
             with gr.Column(scale=1):
                 file_types = [".tif", ".tiff", ".png", ".jpg", ".jpeg"]

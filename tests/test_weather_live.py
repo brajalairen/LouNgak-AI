@@ -2,7 +2,7 @@
 
     .venv\\Scripts\\python -m pytest tests/test_weather_live.py -m live
 
-The free endpoint needs no key. Weather is an optional capability (D-029), not an SIH requirement.
+The free endpoint needs no key. Weather is an optional capability.
 """
 
 import pytest

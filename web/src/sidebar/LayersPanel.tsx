@@ -2,7 +2,7 @@
  *
  *  Date and modality are real: they become `ImageInput.acquired` and `ImageInput.modality`, which
  *  decide how the agent routes the request. The catalogue-search parameters below them are not
- *  connected to anything and say so: retrieval does not read them (D-023, no fake capability). */
+ *  connected to anything and say so: retrieval does not read them (no fake capability). */
 
 import { ChevronDown, ChevronUp, Eye, EyeOff, ImageOff, Layers, Trash2 } from "lucide-react";
 import { useAppStore, nextAnalysisSource, type Layer } from "../state/useAppStore";

@@ -23,7 +23,7 @@ class ToolContext:
     artifacts: dict[str, "ToolOutput"] = field(default_factory=dict)
     _renders: dict[int, np.ndarray] = field(default_factory=dict)
     _valid: dict[int, np.ndarray] = field(default_factory=dict)
-    weather: WeatherBackend | None = None  # the weather specialist's provider (D-029), injected like the VLM
+    weather: WeatherBackend | None = None  # the weather specialist's provider, injected like the VLM
 
     def rgb(self, index: int) -> np.ndarray:
         if index not in self._renders:
@@ -452,7 +452,7 @@ def weather_forecast(ctx, idx, p: WeatherParams, step_id):
                                                      ("precipitation sum (mm)", day.precipitation_sum),
                                                      ("temperature max (degC)", day.temperature_max),
                                                      ("temperature min (degC)", day.temperature_min))]
-    confidence = Confidence(value=None, method="not estimated by SatQuery: rain chances are the provider's forecast "
+    confidence = Confidence(value=None, method="not estimated by LouNgak AI: rain chances are the provider's forecast "
                             "probabilities (wording: likely >= 70%, possible 30-69%, unlikely < 30%)",
                             note="A model forecast for one point, not calibrated for this area.")
     return ToolOutput(outputs=outputs, evidence=evidence, confidence=confidence,

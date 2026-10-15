@@ -1,4 +1,4 @@
-"""HTTP layer for the map-first web client (D-023).
+"""HTTP layer for the map-first web client.
 
 Presentation only, the same tier as `ui.py` and `cli.py`: it builds an `AnalysisRequest`, calls the
 injected analysis function, and rewrites on-disk artifact paths into URLs the browser can fetch. It
@@ -154,7 +154,7 @@ class AreaScope(BaseModel):
 
 
 class WeatherInfo(BaseModel):
-    """Where and when a forecast came from, for the result card and the map marker (D-029)."""
+    """Where and when a forecast came from, for the result card and the map marker."""
 
     provider: str
     model: str | None = None
@@ -262,7 +262,7 @@ class SceneCheck(BaseModel):
 
 class OpticalQualityInfo(BaseModel):
     """How much of the selected area an optical scene shows, by Sentinel-2's own scene classification,
-    and whether it was usable for a water (D-030) or crop-health (AG-04) question. Never the catalogue's
+    and whether it was usable for a water or crop-health question. Never the catalogue's
     tile cloud cover."""
 
     purpose: Literal["water", "vegetation"] = "water"  # what the check was for; only water has a radar fallback
@@ -515,7 +515,7 @@ def _examples() -> list[Example]:
 def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = analyze,
                agri_service: "AssessmentService | None" = None) -> FastAPI:
     """`run_analysis` is injected so a host can wrap it (e.g. `spaces.GPU`), as `build_demo` does.
-    `agri_service` serves the AG-04 dashboard's risk assessments; tests inject one with fake sources."""
+    `agri_service` serves the risk dashboard's assessments; tests inject one with fake sources."""
     from satquery.agri import query as agri_query
     from satquery.agri.routes import agri_router
     from satquery.agri.service import AssessmentService
@@ -527,14 +527,14 @@ def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = ana
     too_large = f"the file is larger than the {settings.max_upload_mb} MB upload limit (SATQUERY_MAX_UPLOAD_MB)"
     @asynccontextmanager
     async def lifespan(_app):
-        # AG-04: compute the first risk assessment in the background as the server starts, so the first
+        # Risk dashboard: compute the first risk assessment in the background as the server starts, so the first
         # dashboard request does not wait for it. Only a real server start runs this (not TestClient
         # without `with`), and SATQUERY_AGRI_WARMUP=0 switches it off.
         if settings.agri_warmup:
             agri.warm_in_background()
         yield
 
-    app = FastAPI(title="SatQuery AI", description="Agentic remote-sensing analysis (SIH26167)", lifespan=lifespan)
+    app = FastAPI(title="LouNgak AI", description="Crop & pest risk monitoring and remote-sensing analysis", lifespan=lifespan)
     app.add_middleware(CORSMiddleware, allow_origins=DEV_ORIGINS, allow_methods=["*"], allow_headers=["*"])
 
     @app.middleware("http")
@@ -577,7 +577,7 @@ def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = ana
 
     @app.post("/api/weather", response_model=AnalyzeResult)
     def weather(request: WeatherRequest) -> AnalyzeResult:
-        """A short-range forecast for a point inside the selected area (optional capability, D-029).
+        """A short-range forecast for a point inside the selected area (optional capability).
 
         Never retrieves imagery. A switched-off provider is a 503; everything else (no area, a
         long-range or mixed question, a provider failure) is a result the card can explain.
@@ -607,7 +607,7 @@ def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = ana
 
     @app.get("/api/example-queries", response_model=list[str])
     def example_queries() -> list[str]:
-        return [*agri_query.EXAMPLES, *EXAMPLE_QUERIES]  # AG-04 questions first
+        return [*agri_query.EXAMPLES, *EXAMPLE_QUERIES]  # crop & pest risk questions first
 
     @app.post("/api/examples/{index}/load", response_model=list[UploadInfo])
     def load_example(index: int) -> list[UploadInfo]:
@@ -730,7 +730,7 @@ def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = ana
 
     def assess_optical(provider, folder: Path, metadata: dict, current: Settings,
                        purpose: str) -> tuple[OpticalQualityInfo, Path | None, bool]:
-        """Sentinel-2's own scene classification (SCL) of the selected area, on the scene's grid (D-030).
+        """Sentinel-2's own scene classification (SCL) of the selected area, on the scene's grid.
 
         Returns the verdict, the file to analyse (the scene, or a copy with cloud, shadow and no-data
         pixels set to nodata) or None when the scene is unusable, and whether the check was cached.
@@ -771,7 +771,7 @@ def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = ana
 
     def fetch_vegetation_scene(provider, folder: Path, metadata: dict, request: FetchImageryRequest,
                                bands: list[str], current: Settings) -> FetchImageryResult:
-        """A crop-health question on one optical scene (AG-04): NDVI on the clear pixels of the area.
+        """A crop-health question on one optical scene: NDVI on the clear pixels of the area.
 
         The least cloudy tile is often not the clearest view of a small area (Thoubal, 2026-10-04: tile
         14.9% cloud, the area 37.7%; the 2026-09-14 scene showed it 91% clear). So when the first scene
@@ -853,7 +853,7 @@ def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = ana
         return info, analysed, metadata, False, checked
 
     def fetch_water_scene(provider, folder: Path, metadata: dict, current: Settings) -> FetchImageryResult:
-        """A water question on one optical scene (D-030).
+        """A water question on one optical scene.
 
         Sentinel-2 first. Its scene classification, on the same grid, says how much of the SELECTED
         AREA is cloud, cloud shadow or no data. Usable: the clear pixels are analysed with NDWI (the
@@ -892,7 +892,7 @@ def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = ana
                                   optical_quality=info, cached=cached and bool(sar_meta.get("cached")))
 
     def fetch_sar(provider, request: FetchImageryRequest, current: Settings) -> FetchImageryResult:
-        """The most recent Sentinel-1 scene for a question asking for radar alone (D-030)."""
+        """The most recent Sentinel-1 scene for a question asking for radar alone."""
         folder = current.runs_dir / "imagery-cache" / provider.sar_cache_key(request.aoi_bbox, days_back=request.days_back)
         path, record = folder / "sar.tif", folder / "sar.json"
         cached = path.is_file() and record.is_file()

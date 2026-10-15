@@ -7,7 +7,7 @@ import type { Aoi, DrawMode } from "../state/useAppStore";
 /** Where the pointer went down, in the form Terra Draw's events use. */
 export type Press = Pick<TerraDrawMouseEvent, "lng" | "lat" | "containerX" | "containerY">;
 
-/** The tools offered, and the Terra Draw mode each one runs. All enclose an area (D-025). */
+/** The tools offered, and the Terra Draw mode each one runs. All enclose an area. */
 export const MODE_NAMES: Record<Exclude<DrawMode, null>, string> = {
   rectangle: "rectangle",
   polygon: "polygon",

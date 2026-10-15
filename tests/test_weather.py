@@ -1,4 +1,4 @@
-"""Weather specialist (D-029, optional capability): routing, forecast period, area -> point, provider
+"""Weather specialist (optional capability): routing, forecast period, area -> point, provider
 parsing and errors, cache, and the answer, trace and report. Offline: HTTP is faked with the response
 shape Open-Meteo returned live on 2026-09-27. The one live call is in tests/test_weather_live.py.
 """
@@ -355,7 +355,7 @@ def test_a_weather_answer_runs_the_agent_pipeline_and_records_it(http, settings)
     assert result.status == "ok" and "Open-Meteo" in result.model
     assert result.outputs["period"] == ["2026-09-27", "2026-10-03"] and len(result.outputs["days"]) == 7
     assert any(e.label == "2026-09-29 precipitation probability max (%)" and e.value == 95 for e in response.evidence)
-    assert response.confidence.value is None and "not estimated by SatQuery" in response.confidence.method
+    assert response.confidence.value is None and "not estimated by LouNgak AI" in response.confidence.method
     report = Path(response.report_html).read_text(encoding="utf-8")
     assert "weather.forecast" in report and "Open-Meteo.com (CC BY 4.0)" in report
 

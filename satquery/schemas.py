@@ -1,4 +1,4 @@
-"""Shared contracts between modules (D-005). Changing a field here needs team approval.
+"""Shared contracts between modules.
 
 Coordinate convention: every geometry is in PIXEL coordinates of the loaded image
 (`RasterImage` grid, x to the right, y down), unless a field name says otherwise.
@@ -9,9 +9,9 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 Modality = Literal["optical", "sar"]
-# "area_only": a drawn area and no imagery, as for a weather question (D-029, optional capability).
+# "area_only": a drawn area and no imagery, as for a weather question (optional capability).
 InputConfig = Literal["single_optical", "single_sar", "pair_cross_modal", "pair_bitemporal", "area_only"]
-# "crop_health" (AG-04): vegetation vigour measured by NDVI from the red and NIR bands, never a VLM guess.
+# "crop_health": vegetation vigour measured by NDVI from the red and NIR bands, never a VLM guess.
 TaskType = Literal["vqa", "caption", "grounding", "change_analysis", "cross_modal_analysis", "weather_forecast",
                    "crop_health"]
 Severity = Literal["error", "warning"]
@@ -82,7 +82,7 @@ class Evidence(BaseModel):
 
 class Confidence(BaseModel):
     value: float | None
-    method: str  # how it was computed, shown to users (D-010)
+    method: str  # how it was computed, shown to users
     calibrated: bool = False
     note: str | None = None
 

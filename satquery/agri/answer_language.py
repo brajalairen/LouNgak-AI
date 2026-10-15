@@ -1,6 +1,6 @@
 """Answers in the asker's language: a Latin Manipuri question gets a Latin Manipuri answer (English is unchanged).
 
-AG-04's answers are written by code from the engine's results, not by a language model (the only model, the
+The agricultural answers are written by code from the engine's results, not by a language model (the only model, the
 Falcon remote-sensing VLM, writes no Manipuri), so this is a template layer. The Latin Manipuri sentences are
 data: satquery/agri/assets/manipuri_responses.json, one template per message, with slots ({level}, {score},
 {confidence}, ...) that code fills with the engine's own values. Nothing numerical or scientific passes through

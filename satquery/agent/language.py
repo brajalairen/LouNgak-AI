@@ -1,4 +1,4 @@
-"""Language and intent normalisation for agricultural questions, before the existing router (D-006).
+"""Language and intent normalisation for agricultural questions, before the existing router.
 
 A question is read as concepts ("risk", "where", "first", ...): Latin Manipuri forms come from the reviewed lexicon
 (satquery/agri/assets/agri_terms_manipuri.json: its terms by category, and its cue words), English forms from the

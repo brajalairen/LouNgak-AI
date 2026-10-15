@@ -1,4 +1,4 @@
-"""D-030: NDWI-first water grounding, the selected area's optical quality from Sentinel-2's scene
+"""NDWI-first water grounding, the selected area's optical quality from Sentinel-2's scene
 classification, the Sentinel-1 fallback it triggers, and explicit radar-only questions.
 
 Offline. The end-to-end retrieval cases (clear, cloudy, Loktak-like, too few pixels, explicit SAR)

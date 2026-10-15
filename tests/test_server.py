@@ -73,7 +73,7 @@ def test_analyze_returns_a_trace_and_servable_artifacts(client, write_tiff, scen
     body = response.json()
 
     assert body["response"]["status"] in {"ok", "partial"}
-    assert body["response"]["trace"]["steps"], "the execution trace is what SIH evaluates"
+    assert body["response"]["trace"]["steps"], "the execution trace is the audit record"
     assert body["response"]["report_html"].startswith("/api/runs/")
     assert client.get(body["response"]["report_html"]).status_code == 200
     assert client.get(body["response"]["report_json"]).status_code == 200
@@ -127,7 +127,7 @@ def test_example_queries_are_served(client):
     queries = client.get("/api/example-queries").json()
     assert len(queries) == 8 and all(isinstance(q, str) for q in queries)
     assert queries[:3] == ["Which areas are high risk?", "Why is Bishnupur flagged?",
-                           "Which should we inspect first?"], "AG-04 questions first"
+                           "Which should we inspect first?"], "risk questions first"
 
 
 @pytest.fixture
@@ -313,7 +313,7 @@ def _upload_as(client, path, filename):
 
 
 def test_the_trace_shows_the_users_file_name_not_a_storage_id(client, write_tiff, area_scene):
-    """The execution trace is what SIH evaluates: it must name the file the user gave it."""
+    """The execution trace is the audit record: it must name the file the user gave it."""
     upload = _upload_as(client, write_tiff("x.tif", area_scene, band_names=["blue", "green", "red", "nir"]),
                         "my scene.tif")
     request = {"query": "Describe this image.", "images": [{"upload_id": upload["id"]}]}
@@ -420,7 +420,7 @@ BBOX = [72.90, 19.00, 73.00, 19.10]
 
 @pytest.fixture
 def scene_classification(monkeypatch):
-    """Fake only the scene-classification request (D-030): an SCL raster written on the retrieved
+    """Fake only the scene-classification request: an SCL raster written on the retrieved
     scene's own grid. `layout(height, width)` gives the classes; clear vegetation (4) by default."""
     from types import SimpleNamespace
 
@@ -950,7 +950,7 @@ def test_no_sar_scene_is_a_structured_failure_never_an_optical_only_answer(clien
     assert response.status_code == 404 and response.json()["code"] == "no_sar_imagery"
 
 
-# ------------------------------------------------------------- weather (optional capability, D-029)
+# ------------------------------------------------------------- weather (optional capability)
 
 WEATHER_AREA = {"type": "Polygon", "coordinates": [[[72.97, 19.05], [73.02, 19.05], [73.02, 19.10], [72.97, 19.10],
                                                     [72.97, 19.05]]]}
@@ -1042,7 +1042,7 @@ def test_health_reports_weather_without_any_credential(client, monkeypatch):
     assert "sk-weather-secret" not in response.text
 
 
-# ------------------------------------------------------------- water: optical first, radar fallback (D-030)
+# ------------------------------------------------------------- water: optical first, radar fallback
 
 WATER_QUESTION = "Highlight the water body in this image."
 
@@ -1261,7 +1261,7 @@ def test_a_radar_question_about_change_over_time_is_refused(client, water_retrie
     assert water_retrieval.optical == water_retrieval.latest == []
 
 
-# ------------------------------------------------------------- crop health: NDVI on the clear pixels (AG-04)
+# ------------------------------------------------------------- crop health: NDVI on the clear pixels
 
 CROP_QUESTION = "How healthy is the crop here?"
 

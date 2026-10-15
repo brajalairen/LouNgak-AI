@@ -1,6 +1,6 @@
 /** Viewer for imagery that cannot go on a map.
  *
- *  SIH requires plain TIFF without a CRS, and PNG/JPEG for the benchmark sets. None of those can be
+ *  Plain TIFF without a CRS, and PNG/JPEG benchmark images, are accepted too. None of those can be
  *  placed geographically, so rather than guessing a location they open here: a floating panel over
  *  the map, with the same command bar and the same result card. */
 

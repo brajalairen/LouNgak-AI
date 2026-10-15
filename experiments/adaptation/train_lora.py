@@ -1,4 +1,4 @@
-"""LoRA adaptation of Falcon on BigEarthNet.txt binary VQA rows (SatQuery AI's fine-tuned component).
+"""LoRA adaptation of Falcon on BigEarthNet.txt binary VQA rows (LouNgak AI's fine-tuned component).
 
 Config is the one measured feasible on the RTX 4050 on 2026-09-21: LoRA r=8, alpha=16,
 dropout 0.05, the 96 decoder attention projections, vision tower frozen, batch 1 with gradient

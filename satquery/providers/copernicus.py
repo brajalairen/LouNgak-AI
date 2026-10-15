@@ -3,7 +3,7 @@
 Scope, deliberately small (MVP): rectangle AOI; one Sentinel-2 date, two dates for a question about
 change over time (see providers/temporal.py), or a Sentinel-2 scene plus the Sentinel-1 scene
 closest to it in time for a question asking for optical and SAR together. This is an acquisition
-layer only -- it obtains GeoTIFFs and their provenance, then the existing SatQuery pipeline does
+layer only -- it obtains GeoTIFFs and their provenance, then the existing analysis pipeline does
 the analysis.
 
 Endpoints:
@@ -49,7 +49,7 @@ from satquery.providers.errors import (
 TOKEN_URL = "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"
 CATALOG_URL = "https://sh.dataspace.copernicus.eu/api/v1/catalog/1.0.0/search"
 PROCESS_URL = "https://sh.dataspace.copernicus.eu/api/v1/process"
-# Area statistics over any polygon and time window (AG-04 NDVI baseline); verified live 2026-10-08.
+# Area statistics over any polygon and time window (crop-risk NDVI baseline); verified live 2026-10-08.
 STATISTICS_URL = "https://sh.dataspace.copernicus.eu/api/v1/statistics"
 COLLECTION = "sentinel-2-l2a"
 
@@ -356,7 +356,7 @@ class CopernicusSentinelProvider:
 
     def retrieve_scene_classification(self, bbox_wgs84, acquired_date: str, destination: Path) -> Path:
         """Sentinel-2 L2A's scene classification (cloud, cloud shadow, water, ...) for the selected area
-        on `acquired_date`, on exactly the grid of that day's bands (D-030)."""
+        on `acquired_date`, on exactly the grid of that day's bands."""
         bbox = tuple(float(v) for v in bbox_wgs84)
         content = self._render(bbox, self._sentinel2_day(acquired_date), scl_evalscript())
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -406,7 +406,7 @@ class CopernicusSentinelProvider:
                   max_cloud: float | None = None) -> str:
         """Identity of a request: area, collection, window, cloud limit, resolution, bands, and the day
         it was searched. The window is "the last N days" counted from today, so the same rectangle must
-        not be served yesterday's search: a newer acquisition would never be seen (AG-04 monitoring)."""
+        not be served yesterday's search: a newer acquisition would never be seen (risk monitoring)."""
         material = json.dumps({
             "searched_on": search_date(),
             "bbox": [round(float(v), 6) for v in bbox],
@@ -625,7 +625,7 @@ class CopernicusSentinelProvider:
 
     def retrieve_sar_near(self, bbox_wgs84, optical_date: date, destination: Path) -> RetrievedScene:
         """The Sentinel-1 VV+VH scene closest in time to an optical acquisition, within
-        SAR_MAX_DAYS_APART: the radar fallback for an optical scene too cloudy to use (D-030)."""
+        SAR_MAX_DAYS_APART: the radar fallback for an optical scene too cloudy to use."""
         bbox = tuple(float(v) for v in bbox_wgs84)
         today = datetime.now(timezone.utc).date()
         features = self.search_sar(bbox, start=optical_date - timedelta(days=SAR_MAX_DAYS_APART),
@@ -659,7 +659,7 @@ class CopernicusSentinelProvider:
 
     def retrieve_sar(self, bbox_wgs84, destination: Path, *, days_back: int | None = None) -> RetrievedScene:
         """The most recent Sentinel-1 VV+VH scene of the area, for a question that asks for radar
-        alone ("use radar to find the water"). No optical scene is involved (D-030)."""
+        alone ("use radar to find the water"). No optical scene is involved."""
         bbox = tuple(float(v) for v in bbox_wgs84)
         self.validate_area(bbox)
         days = self.days_back if days_back is None else days_back

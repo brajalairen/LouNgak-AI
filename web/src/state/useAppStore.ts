@@ -16,9 +16,9 @@ import type {
 import { isBasemapId, type BasemapId } from "../map/basemap";
 import { useAgriStore } from "../agri/useAgriStore";
 
-/** Area-enclosing shapes only: a point cannot restrict an analysis (D-025). */
+/** Area-enclosing shapes only: a point cannot restrict an analysis. */
 export type DrawMode = "rectangle" | "polygon" | "circle" | null;
-/** "priority": the AG-04 early-warning list, open by default. */
+/** "priority": the early-warning list, open by default. */
 export type SidebarSection = "priority" | "search" | "select" | "layers" | "saved" | "help" | null;
 
 /** A loaded raster plus its display state. `mappable` decides map layer vs off-map viewer. */
@@ -87,7 +87,7 @@ interface AppState {
    *  Empty when the imagery was the user's own. */
   scenes: SceneMetadata[];
   /** What the optical scene showed of the selected area for a water question, and whether radar
-   *  was used instead (D-030). null when no optical scene was assessed. */
+   *  was used instead. null when no optical scene was assessed. */
   opticalQuality: OpticalQualityInfo | null;
   /** Overlays the user has switched off; a result may carry several. */
   hiddenOverlays: Set<string>;
@@ -153,7 +153,7 @@ function readSavedAreas(): SavedArea[] {
   try {
     const raw = localStorage.getItem(SAVED_AREAS_KEY);
     const saved = raw ? (JSON.parse(raw) as SavedArea[]) : [];
-    // Points saved before D-025 can no longer restrict anything, so they are not offered.
+    // Points saved before the point tool was removed can no longer restrict anything, so they are not offered.
     return saved.filter((area) => area.geometry?.geometry?.type !== "Point");
   } catch {
     return [];
@@ -266,7 +266,7 @@ const MIXED_QUESTION =
 /**
  * Asks the server which specialist a question is for, and answers it here unless it is for imagery.
  * Returns true when the question was handled (a weather answer, a refusal, or a failure), false when
- * the imagery flow should take it. Weather is an optional capability (D-029), not an SIH requirement.
+ * the imagery flow should take it. Weather is an optional capability.
  *
  * The forecast is for a point inside the drawn area, whatever its shape; failing that, inside the
  * footprint of the images in use, and the answer says which.
@@ -287,7 +287,7 @@ async function answerIfNotImagery(
     const routed = await api.route(query, controller.signal);
     if (controller.signal.aborted) throw controller.signal.reason;
     if (routed.route === "agri") {
-      // AG-04: answered from the risk engine's assessments; no imagery is retrieved and no area is needed.
+      // Crop & pest risk: answered from the risk engine's assessments; no imagery is retrieved and no area is needed.
       assessing = true;
       set({ stage: "assessing", result: null, scenes: [], opticalQuality: null, detailsOpen: false });
       await useAgriStore.getState().ask(query, controller.signal);
@@ -364,7 +364,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   error: null,
   hiddenOverlays: new Set(),
 
-  // The AG-04 dashboard opens on its priority list.
+  // The risk dashboard opens on its priority list.
   sidebarOpen: true,
   section: "priority",
   pendingQuery: null,
@@ -439,7 +439,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   runAnalysis: async (query, forcedTask) => {
     // Weather first: a weather question is answered by its own specialist and must never reach the
     // imagery flow below, which would retrieve Sentinel imagery for it. Below that line nothing changed.
-    // Every question is routed, even with no area or image: an AG-04 risk question needs neither.
+    // Every question is routed, even with no area or image: a crop & pest risk question needs neither.
     if (!forcedTask && (await answerIfNotImagery(query, set, get))) return;
 
     const { layers, aoi } = get();

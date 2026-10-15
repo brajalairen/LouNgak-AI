@@ -1,4 +1,4 @@
-"""Rule-based intent classification (D-006). Every intent records the rule that produced it."""
+"""Rule-based intent classification. Every intent records the rule that produced it."""
 
 import re
 
@@ -79,7 +79,7 @@ def needs_optical_and_sar(query: str) -> str | None:
 def needs_sar_only(query: str) -> str | None:
     """The radar phrase of a question that asks for SAR alone ("use radar to find the water"), or None.
 
-    Naming optical too, or asking for fusion, is the joint optical + SAR path instead (D-030).
+    Naming optical too, or asking for fusion, is the joint optical + SAR path instead.
     """
     if needs_optical_and_sar(query):
         return None
@@ -100,8 +100,8 @@ def cross_modal_classes(query: str) -> list[str]:
     return [c for c in CROSS_MODAL_CLASSES if c in named] or list(CROSS_MODAL_CLASSES)
 
 
-# Is it a weather question? Weather is an optional capability answered by its own specialist
-# (D-029), never by imagery, so it is decided before any imagery is retrieved.
+# Is it a weather question? Weather is an optional capability answered by its own specialist,
+# never by imagery, so it is decided before any imagery is retrieved.
 # Unambiguous weather words count on their own ("rainforest" does not: \brain needs a boundary).
 # Words that also describe what imagery shows ("snow on the peaks", "cloud cover in this scene",
 # "wind turbines") count only with a forecast or time cue.
@@ -118,7 +118,7 @@ IMAGERY_CUES = re.compile(r"\b(?:images?|imagery|scenes?|satellite|sentinel\S*|s
                           r"what (?:has )?changed|any changes|change detection|highlight|segment\w*)\b", re.I)
 
 
-# Is it a crop-health question (AG-04)? Answered by NDVI computed from the red and NIR bands, never
+# Is it a crop-health question? Answered by NDVI computed from the red and NIR bands, never
 # by the VLM's visual guess. Naming NDVI counts on its own; otherwise a health cue needs a vegetation
 # word with it, so "is the lake healthy?" or "the condition of the road" do not count. Pest names
 # that contain colour words ("brown planthopper", "yellow stem borer") are deliberately not cues:

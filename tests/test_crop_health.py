@@ -1,4 +1,4 @@
-"""Crop health (AG-04): NDVI questions are answered by the red and NIR bands, never by a VLM guess.
+"""Crop health: NDVI questions are answered by the red and NIR bands, never by a VLM guess.
 
 Covers the routing of crop-health wording, the `optical.vegetation_health` tool and its answer, the
 refusals when NDVI cannot be measured (no NIR, radar input, too little clear land), and the daily

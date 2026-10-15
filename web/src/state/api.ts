@@ -103,15 +103,15 @@ export const api = {
       }),
     }),
 
-  /** AG-04: every monitored area as the risk engine ranked it, with the dashboard-wide notices.
+  /** Crop & pest risk: every monitored area as the risk engine ranked it, with the dashboard-wide notices.
    *  The first call after a server start may take a while: it runs the assessment. */
   agriOverview: (signal?: AbortSignal) => request<AgriOverview>("/api/agri/overview", { signal }),
 
-  /** AG-04: one area's full assessment, for the "Why is this area at risk?" drawer. */
+  /** Crop & pest risk: one area's full assessment, for the "Why is this area at risk?" drawer. */
   agriArea: (id: string, signal?: AbortSignal) =>
     request<AgriAreaDetail>(`/api/agri/areas/${encodeURIComponent(id)}`, { signal }),
 
-  /** AG-04: an agricultural question, answered from the risk engine's assessments (read-only). */
+  /** Crop & pest risk: an agricultural question, answered from the risk engine's assessments (read-only). */
   agriQuery: (query: string, selectedAreaId: string | null, signal?: AbortSignal) =>
     request<AgriQueryResult>("/api/agri/query", {
       method: "POST",

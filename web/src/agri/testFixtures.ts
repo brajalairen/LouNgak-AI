@@ -1,4 +1,4 @@
-/** Test fixtures shared by the AG-04 dashboard tests (a plain module, so no test runs twice). */
+/** Test fixtures shared by the risk dashboard tests (a plain module, so no test runs twice). */
 
 import type { AreaSummary, DistrictSummary } from "../state/types";
 

@@ -99,7 +99,7 @@ const triangleAoi = (): Aoi => ({
   bounds: [10, 50, 11, 51],
 });
 
-/** An area saved in a browser before the point tool was removed (D-025). */
+/** An area saved in a browser before the point tool was removed. */
 const pointAoi = (): Aoi => ({
   feature: { type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [10.5, 50.5] } },
   bounds: [10.5, 50.5, 10.5, 50.5],
@@ -158,7 +158,7 @@ describe("the drawn area that reaches the backend", () => {
     expect(analyseOptions().aoiGeometry).toMatchObject({ type: "Polygon" });
   });
 
-  it("never sends a point as a shape: it encloses no area (D-025)", () => {
+  it("never sends a point as a shape: it encloses no area", () => {
     expect(areaGeometry(pointAoi())).toBeNull();
     expect(areaGeometry(polygonAoi())).toMatchObject({ type: "Polygon" });
     expect(areaGeometry(null)).toBeNull();
@@ -236,7 +236,7 @@ describe("waiting for an analysis", () => {
 });
 
 describe("areas saved in the browser", () => {
-  it("drops points saved before the point tool was removed (D-025)", async () => {
+  it("drops points saved before the point tool was removed", async () => {
     localStorage.setItem(
       "satquery.savedAreas",
       JSON.stringify([
@@ -392,7 +392,7 @@ describe("when retrieval or analysis fails", () => {
 
     const running = useAppStore.getState().runAnalysis("what is here?");
     expect(useAppStore.getState().pending).toBe(true);
-    // Retrieval starts once the question has been routed (weather is checked first, D-029).
+    // Retrieval starts once the question has been routed (weather is checked first).
     await vi.waitFor(() => expect(useAppStore.getState().stage).toBe("searching"));
 
     useAppStore.getState().cancelAnalysis();
@@ -771,7 +771,7 @@ describe("asking about the weather", () => {
   });
 });
 
-describe("water under cloud: the radar fallback (D-030)", () => {
+describe("water under cloud: the radar fallback", () => {
   const optical = { satellite: "Sentinel-2", product_level: "L2A", acquired: "2026-09-19", cloud_cover: 16.61 };
   const radar = { satellite: "Sentinel-1D", product_level: "GRD", acquired: "2026-09-13", cloud_cover: null, modality: "sar" };
 
@@ -828,7 +828,7 @@ describe("water under cloud: the radar fallback (D-030)", () => {
   });
 });
 
-describe("AG-04 crop & pest risk questions", () => {
+describe("crop & pest risk questions", () => {
   const ranking = {
     intent: "rank", matched_rule: "ranking cue 'Which areas are high risk'", answer: "Indicators suggest HIGH risk",
     area_ids: ["demo-bishnupur-nambol"], focus_area_id: "demo-bishnupur-nambol",

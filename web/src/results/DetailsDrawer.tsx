@@ -1,6 +1,6 @@
-/** The evaluator-facing detail, one click behind the result card.
+/** The full audit detail, one click behind the result card.
  *
- *  SIH scores the observable execution trace (selected task, tools, permitted parameters, outputs),
+ *  The observable execution trace (selected task, tools, permitted parameters, outputs) is the audit record,
  *  so it is all here in full: the routing rule, every step, input validation, the visual evidence
  *  and both report downloads. Hidden by default, never hard to find. */
 

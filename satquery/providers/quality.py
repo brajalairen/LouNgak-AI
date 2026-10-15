@@ -1,4 +1,4 @@
-"""Is a retrieved optical scene usable over the selected area? (D-030)
+"""Is a retrieved optical scene usable over the selected area?
 
 Judged pixel by pixel from Sentinel-2 L2A's own Scene Classification Layer (SCL), rendered on exactly
 the grid of the retrieved bands, which is the drawn rectangle itself. Every figure here is therefore
@@ -31,7 +31,7 @@ class OpticalQuality:
     clear_pixels: int
     affected_fraction: float
     class_fractions: dict[str, float]  # every SCL class present in the area, by name
-    max_affected_fraction: float       # the configured limit (a SatQuery heuristic)
+    max_affected_fraction: float       # the configured limit (an operating heuristic)
     min_clear_pixels: int
     usable: bool
     reason: str | None                 # why it is not usable; None when it is

@@ -90,7 +90,7 @@ describe("anchoredEvent", () => {
 });
 
 describe("the area tools", () => {
-  it("are the three that enclose an area, with no point tool (D-025)", () => {
+  it("are the three that enclose an area, with no point tool", () => {
     expect(Object.keys(MODE_NAMES).sort()).toEqual(["circle", "polygon", "rectangle"]);
   });
 });

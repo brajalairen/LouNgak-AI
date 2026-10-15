@@ -143,7 +143,7 @@ def test_one_live_optical_sar_retrieval_feeds_the_cross_modal_pipeline(tmp_path)
     print("  " + response.answer.replace("\n", "\n  "))
 
 
-# Loktak Lake, Manipur: the area where the tile's catalogue cloud cover hid a cloud-covered lake (D-030).
+# Loktak Lake, Manipur: the area where the tile's catalogue cloud cover hid a cloud-covered lake.
 LOKTAK = (93.769, 24.508, 93.8705, 24.5998)
 
 

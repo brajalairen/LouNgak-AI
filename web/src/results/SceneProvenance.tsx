@@ -59,7 +59,7 @@ export function SceneProvenance() {
   );
 }
 
-/** What the optical scene showed of the selected area for a water (D-030) or crop-health (AG-04)
+/** What the optical scene showed of the selected area for a water or crop-health
  *  question: measured from Sentinel-2's own scene classification over the area, never the tile's
  *  catalogue cloud cover. Only water falls back to radar; radar cannot measure NDVI. */
 function OpticalCheck() {

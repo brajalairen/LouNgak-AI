@@ -13,7 +13,7 @@
    "verified": true,
    "verified_by": "Member A",
    "verified_on": "2026-10-08",
-   "notes": "The same Manipuri sentence is given independently for 'Where do I begin?' (row 58191, a different source document). AG-04's English router already treats 'where should we start' as an inspection cue. Uses ei (I); a 'we' form is not attested."
+   "notes": "The same Manipuri sentence is given independently for 'Where do I begin?' (row 58191, a different source document). the English router already treats 'where should we start' as an inspection cue. Uses ei (I); a 'we' form is not attested."
   },
   {
    "id": "mni-002",
@@ -41,7 +41,7 @@
    "verified": true,
    "verified_by": "Member A",
    "verified_on": "2026-10-08",
-   "notes": "mapham = area. Proposed use: asked with a monitored area selected, AG-04 answers with that area's risk and reasons. General-domain sentence ('safe' in a general sense): a fluent speaker should confirm it fits an agricultural-risk question."
+   "notes": "mapham = area. Proposed use: asked with a monitored area selected, the app answers with that area's risk and reasons. General-domain sentence ('safe' in a general sense): a fluent speaker should confirm it fits an agricultural-risk question."
   },
   {
    "id": "mni-004",
@@ -67,7 +67,7 @@
    "verified": true,
    "verified_by": "Member A",
    "verified_on": "2026-10-08",
-   "notes": "Hayeng = tomorrow; nong = rain. A forecast question; AG-04's weather answer covers the forecast days."
+   "notes": "Hayeng = tomorrow; nong = rain. A forecast question; the weather answer covers the forecast days."
   },
   {
    "id": "mni-006",
@@ -106,7 +106,7 @@
    "verified": true,
    "verified_by": "Member A",
    "verified_on": "2026-10-08",
-   "notes": "Code-mixed ('field', 'crop condition'). Member A gave the target (Crop Health Analysis), not an English gloss: english_meaning is the closest English question AG-04 already answers with NDVI. Needs a drawn area or an image."
+   "notes": "Code-mixed ('field', 'crop condition'). Member A gave the target (Crop Health Analysis), not an English gloss: english_meaning is the closest English question the app already answers with NDVI. Needs a drawn area or an image."
   },
   {
    "id": "mni-009",
@@ -119,7 +119,7 @@
    "verified": true,
    "verified_by": "Member A",
    "verified_on": "2026-10-08",
-   "notes": "bishnupur = Bishnupur (place-bishnupur); 'risk' kept in English; 'eingonda utlo' = show me (corpus row 42264 'utlo eingonda'). Same intent as the English question in AG-04's router. Drafted by the AI assistant, corrected and verified by Member A on 2026-10-08."
+   "notes": "bishnupur = Bishnupur (place-bishnupur); 'risk' kept in English; 'eingonda utlo' = show me (corpus row 42264 'utlo eingonda'). Same intent as the English question in the app's router. Drafted by the AI assistant, corrected and verified by Member A on 2026-10-08."
   },
   {
    "id": "mni-010",
@@ -132,7 +132,7 @@
    "verified": true,
    "verified_by": "Member A",
    "verified_on": "2026-10-08",
-   "notes": "Drafted by the AI assistant, corrected and verified by Member A on 2026-10-08. Literally 'Why was Bishnupur given priority?': -bu (object), karigi = why (rows 26984, 101675), pikhibano = 'did ... give?' (rows 1911, 62249); 'priority' kept in English. Answered by explaining Bishnupur (its rank and the engine's reasons): the inspection list shows only the top areas and may not include it. AG-04's English router sends the English question to INSPECTION_PRIORITY instead."
+   "notes": "Drafted by the AI assistant, corrected and verified by Member A on 2026-10-08. Literally 'Why was Bishnupur given priority?': -bu (object), karigi = why (rows 26984, 101675), pikhibano = 'did ... give?' (rows 1911, 62249); 'priority' kept in English. Answered by explaining Bishnupur (its rank and the engine's reasons): the inspection list shows only the top areas and may not include it. the English router sends the English question to INSPECTION_PRIORITY instead."
   }
  ]
 }

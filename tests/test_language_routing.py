@@ -165,6 +165,13 @@ def test_10_image_questions_still_go_to_satellite_analysis(client, query, intent
     assert (routed["route"], routed["intent"], routed["language"]) == ("imagery", intent, "english"), routed
 
 
+@pytest.mark.parametrize("query", ["Is it safe to irrigate?", "Should I irrigate the field this week?"])
+def test_an_irrigation_question_is_not_taken_for_a_risk_question(client, query):
+    # Bare "it" and "safe" are too generic to mean a selected area or risk: these stay with satellite analysis.
+    routed = route(client, query)
+    assert (routed["route"], routed["intent"]) == ("imagery", None), routed
+
+
 @pytest.mark.parametrize("query", ["Tell me about pests", "Risk?", built("term-crop", "term-harvest")])
 def test_an_unclear_risk_or_manipuri_question_is_asked_to_rephrase_not_sent_to_imagery(client, query):
     routed = route(client, query)

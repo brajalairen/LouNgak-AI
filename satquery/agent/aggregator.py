@@ -137,7 +137,7 @@ def _crop_health(intent, r, ctx, run_dir):
     return "\n".join(lines), step.confidence, overlays
 
 
-# Water and vegetation on multispectral input: the spectral mask is the primary evidence (D-030).
+# Water and vegetation on multispectral input: the spectral mask is the primary evidence.
 SPECTRAL_GROUNDING = {"water": ("water", "NDWI > {ndwi_water_threshold:g}", "blue"),
                       "vegetation": ("vegetation", "NDVI > {ndvi_vegetation_threshold:g}", "green")}
 
@@ -351,7 +351,7 @@ def _cross_modal(intent, r, ctx, run_dir):
     return answer, fusion.confidence, layers + [_overlay_evidence(composite, run_dir, "cross_modal", label, fusion.step_id)]
 
 
-# --------------------------------------------------------------------------- weather (D-029, optional)
+# --------------------------------------------------------------------------- weather (optional)
 
 HEAVY_RAIN_MM = 64.5  # IMD's "heavy rainfall" threshold for 24 h; said wherever it is used
 

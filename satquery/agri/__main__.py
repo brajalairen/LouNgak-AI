@@ -1,4 +1,4 @@
-"""Command line for the AG-04 risk engine (verification and inspection; the dashboard comes later).
+"""Command line for the crop & pest risk engine (verification and inspection).
 
   python -m satquery.agri assess                 rank the demo areas with live data (cached under runs/)
   python -m satquery.agri assess --offline       cached data only, no network

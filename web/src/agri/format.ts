@@ -1,4 +1,4 @@
-/** Presentation only: colours, labels and formatting for the AG-04 dashboard.
+/** Presentation only: colours, labels and formatting for the risk dashboard.
  *
  *  Nothing here computes risk. Ranks, levels, scores, points, confidence and completeness all come
  *  from the server's risk engine; these helpers only decide how they look. */

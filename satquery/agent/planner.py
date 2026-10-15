@@ -29,7 +29,7 @@ def build_plan(intent: Intent, config: InputConfig, images: list[RasterImage], q
 
 
 def build_weather_plan(horizon, point: tuple[float, float], area_source: str) -> list[PlanStep]:
-    """One forecast step for the area's representative point (D-029, optional capability).
+    """One forecast step for the area's representative point (optional capability).
 
     `horizon` is a satquery.agent.forecast.ForecastHorizon; `point` is (longitude, latitude).
     """
@@ -60,7 +60,7 @@ def _single_optical(plan, intent, image, query):
         # Multispectral input: the spectral index is the primary evidence and the VLM corroborates it,
         # as in `_bitemporal` and `_cross_modal`. The VLM was trained on sub-metre imagery and can miss
         # water on a dark or cloud-stretched 10 m render (Loktak Lake, 2026-09-27: VLM 0%, NDWI found
-        # the lake) -- D-030.
+        # the lake).
         plan.add("optical.spectral_indices", [0], f"primary evidence: {intent.target} from spectral indices")
         plan.add("vlm.segment", [0], f"secondary evidence: segment {intent.target}", target=intent.target)
     elif intent.target in ("water", "building", "vegetation", "road"):

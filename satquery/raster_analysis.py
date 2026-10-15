@@ -1,4 +1,4 @@
-"""Deterministic raster analysis (no ML). These are the labelled heuristic floors of D-009.
+"""Deterministic raster analysis (no ML). These are the labelled heuristic floors.
 
 Thresholds adapt to each image (Otsu, percentiles) instead of fixed dB or reflectance values,
 because target sensors (Cartosat-2S, RISAT) differ from Sentinel and their calibration is UNKNOWN.

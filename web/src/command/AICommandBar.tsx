@@ -75,7 +75,7 @@ export function AICommandBar() {
     setQuery("");
   };
 
-  // AG-04 risk questions (the first suggestions) need no area or image, so they are offered whenever idle.
+  // Crop & pest risk questions (the first suggestions) need no area or image, so they are offered whenever idle.
   const showSuggestions = !result && !pending && !query.trim();
 
   return (
