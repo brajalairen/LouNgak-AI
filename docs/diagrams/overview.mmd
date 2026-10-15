@@ -1,0 +1,64 @@
+%% LouNgak AI — product overview workflow (rendered as overview.png)
+%% Editable Mermaid source. Every step below is implemented in the repository; the code behind each
+%% stage is listed in docs/architecture.md.
+%%
+%% Render:  npx -y @mermaid-js/mermaid-cli -i overview.mmd -o overview.svg
+
+flowchart LR
+  classDef input  fill:#F1F8F4,stroke:#1B7F4F,stroke-width:2px,color:#1F2937,rx:10,ry:10
+  classDef route  fill:#EFF9F7,stroke:#0F766E,stroke-width:2px,color:#1F2937,rx:10,ry:10
+  classDef data   fill:#EFF6FC,stroke:#1E6FA8,stroke-width:2px,color:#1F2937,rx:10,ry:10
+  classDef risk   fill:#FDF6EC,stroke:#B45309,stroke-width:2px,color:#1F2937,rx:10,ry:10
+  classDef result fill:#F4F6F8,stroke:#334155,stroke-width:2px,color:#1F2937,rx:10,ry:10
+  classDef note   fill:#FFFFFF,stroke:#CBD5E1,stroke-width:1px,color:#64748B,rx:6,ry:6
+
+  subgraph S1["1 · Ask or select"]
+    A1["Question in English or Manipuri<br/><small>Latin or Meitei Mayek script</small>"]
+    A2["Or pick a monitored zone<br/>or draw an area on the map"]
+  end
+
+  subgraph S2["2 · Interpret and route"]
+    B1["Deterministic, rule-based<br/>intent and language detection"]
+    B2{"Which specialist?"}
+  end
+
+  subgraph S3["3 · Gather evidence"]
+    C1["Weather — Open-Meteo hourly<br/><small>14 d history + 7 d forecast</small>"]
+    C2["NDVI — Sentinel-2 (Copernicus)<br/><small>30-day window vs 3-year baseline</small>"]
+    C3["Pest reports — SAMPLE data<br/><small>synthetic, clearly labelled</small>"]
+  end
+
+  subgraph S4["4 · Assess the risk"]
+    D1["Weather-pest rules × 0.5<br/>NDVI anomaly × 0.3<br/>Pest reports × 0.2"]
+    D2["Missing input is left out,<br/>never estimated"]
+    D3["Score 0–100 + level<br/>+ data completeness"]
+  end
+
+  subgraph S5["5 · Show and explain"]
+    E1["Zones coloured by risk level;<br/>districts ranked as context"]
+    E2["Score breakdown, reasons<br/>and data provenance"]
+    E3["Which zone to inspect first"]
+  end
+
+  A1 --> B1
+  A2 --> B1
+  B1 --> B2
+  B2 -- "crop & pest risk" --> C1
+  B2 -- "weather question" --> C1
+  B2 -- "imagery question" --> C2
+  B2 -- "mixed question" --> X1["Asked to rephrase<br/>(never guessed)"]
+  C1 --> D1
+  C2 --> D1
+  C3 --> D1
+  D1 --> D2 --> D3
+  D3 --> E1 --> E2 --> E3
+
+  N1["Prototype · synthetic pest reports · unvalidated thresholds — decision support, not a validated prediction.<br/>NDVI indicates vegetation vigour, not a disease diagnosis; no pest-detection model is trained or claimed."]
+  E3 -.-> N1
+
+  class A1,A2 input
+  class B1,B2 route
+  class C1,C2,C3 data
+  class D1,D2,D3 risk
+  class E1,E2,E3 result
+  class X1,N1 note
