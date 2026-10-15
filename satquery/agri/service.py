@@ -5,7 +5,7 @@ The API never scores anything itself. It asks this service, which runs the uncha
 inputs underneath are cached on disk by their own clients (weather 3 h, NDVI by window), so a
 recompute is cheap once warm, and offline mode serves those caches only, labelled CACHED.
 
-Demo reliability (Phase 4):
+Demo reliability:
 - `warm_in_background()` computes the first assessment when the server starts, so the first page
   does not wait for it.
 - `save_snapshot()` freezes a known-good assessment to a file. It is served instead of live data when

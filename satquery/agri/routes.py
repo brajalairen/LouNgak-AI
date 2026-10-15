@@ -91,7 +91,7 @@ class AgriOverview(BaseModel):
     counts: dict[str, int]
     examples: list[str]
     areas: list[AreaSummary]
-    # Phase 4 / district context
+    # Snapshot / district context
     mode: Literal["live", "snapshot"]
     snapshot_saved_at: str | None  # set when a frozen snapshot is shown
     fallback_reason: str | None    # why the snapshot is shown instead of live data

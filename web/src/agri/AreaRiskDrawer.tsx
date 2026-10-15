@@ -198,7 +198,7 @@ function Content({ detail }: { detail: AgriAreaDetail }) {
   );
 }
 
-/** Supporting satellite evidence for the zone: the existing Phase 1 crop-health flow (Sentinel-2 NDVI,
+/** Supporting satellite evidence for the zone: the existing crop-health flow (Sentinel-2 NDVI,
  *  cloud-masked), run on the zone's rectangle. Its result is separate from the risk score above. */
 function CropHealthAction({ bounds }: { bounds: [number, number, number, number] }) {
   const select = useAgriStore((s) => s.select);

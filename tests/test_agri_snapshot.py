@@ -1,4 +1,4 @@
-"""Phase 4 reliability: frozen snapshot with live-first fallback, warm-up, day-to-day stable SAMPLE reports."""
+"""Reliability: frozen snapshot with live-first fallback, warm-up, day-to-day stable SAMPLE reports."""
 
 import json
 from datetime import date, timedelta
