@@ -1,6 +1,6 @@
 {
   "status": "TO_CONFIRM",
-  "note": "District NAMES only (no boundaries), for navigation. Retrieved from OpenStreetMap (administrative level 5 within Manipur, ODbL) on 2026-10-08: 16 districts. Member B confirms against the official list and supplies verified boundaries separately.",
+  "note": "District NAMES only (no boundaries), for navigation. Retrieved from OpenStreetMap (administrative level 5 within Manipur, ODbL) on 2026-10-08: 16 districts. The names match the Local Government Directory (docs/geo/district-boundaries-sources.md); boundaries are loaded separately.",
   "source": "OpenStreetMap contributors (ODbL), Overpass API, admin_level=5 in IN-MN",
   "retrieved_on": "2026-10-08",
   "districts": [

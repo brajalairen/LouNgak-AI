@@ -2,7 +2,7 @@
 
 AG-04's answers are written by code from the engine's results, not by a language model (the only model, the
 Falcon remote-sensing VLM, writes no Manipuri), so this is a template layer. The Latin Manipuri sentences are
-data: Member_A/manipuri_responses.json, one template per message, with slots ({level}, {score},
+data: satquery/agri/assets/manipuri_responses.json, one template per message, with slots ({level}, {score},
 {confidence}, ...) that code fills with the engine's own values. Nothing numerical or scientific passes through
 a template unfilled or reworded: scores, levels, confidence, the engine's reasons (its evidence) and the NDVI
 figures are inserted exactly as the engine gives them.

@@ -1,6 +1,6 @@
-# Member B: validation of the Manipur district boundaries
+# Validation of the Manipur district boundaries
 
-Checked on 2026-10-08. The file checked is `data/geo/manipur_districts.geojson`, SHA-256 `9424a9ec8015e074d3786c19b1ce0063d1714dbae268f1ff31475401c6ea13fd`. It is local only, outside Git; see `SOURCES.md` for why.
+Checked on 2026-10-08. The file checked is `data/geo/manipur_districts.geojson`, SHA-256 `9424a9ec8015e074d3786c19b1ce0063d1714dbae268f1ff31475401c6ea13fd`. It is local only, outside Git; see [district-boundaries-sources.md](district-boundaries-sources.md) for why.
 
 **Result: every check passed.**
 
@@ -35,7 +35,7 @@ These checks used shapely 2 in a throwaway environment, not a repository depende
 | LGD itself lists Kamjong as 717 | pass |
 | "Kamjang" in any `id`, `name` or `district` | none |
 
-## Compatibility with AG-04
+## Compatibility with LouNgak AI
 
 These checks used the application's own code, with the frozen snapshot of 2026-10-08 17:17 UTC.
 
@@ -43,7 +43,7 @@ These checks used the application's own code, with the frozen snapshot of 2026-1
 |---|---|
 | `satquery.agri.areas.load_areas` accepts the file | 16 features, all `kind: "district"` |
 | `districts.load_boundaries` keys equal `manipur_district_names.json` | 16 of 16 |
-| `team/check_deliverables.py` (Member B check, run on `data/geo/`) | OK: 16 districts, about 22,288 km² |
+| Boundary-file check through the engine's loaders (run on `data/geo/`) | OK: 16 districts, about 22,288 km² |
 | `/api/agri/overview` with the outlines loaded | 16 districts, all with an outline and a `boundary_source`; `official_boundaries: true` |
 | The SoI spelling in what the dashboard receives | `KAMJANG` and `soi_dist_lgd` never appear in `/api/agri/overview` |
 | Payload of `/api/agri/overview` | 16 KB without outlines, 750 KB with |
@@ -79,7 +79,7 @@ Checked in headless Chrome against a local server with the outlines loaded:
 
 ## How to re-run
 
-The scripts are kept outside the repository with the raw data, in `Seva/work`. The commands are in `SOURCES.md` (Processing). Validation:
+The processing and validation scripts are not part of this repository: they were run next to the raw Survey of India data, which cannot be redistributed. The processing commands are in [district-boundaries-sources.md](district-boundaries-sources.md#processing); the validation was run as:
 
 ```bash
 uv run --no-project --with "shapely>=2.0" python validate_geometry.py data/geo/manipur_districts.geojson \

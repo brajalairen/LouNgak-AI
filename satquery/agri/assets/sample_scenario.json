@@ -1,6 +1,6 @@
 {
   "status": "SAMPLE",
-  "note": "Scenario for the seeded SAMPLE pest-report generator. Every report it produces is SYNTHETIC, for prototype demonstration only, and is labelled 'SAMPLE DATA — Prototype Simulation'. It is not, and must never be presented as, a real government or field observation. Member B may replace this scenario (sample_reports_spec.md).",
+  "note": "Scenario for the seeded SAMPLE pest-report generator. Every report it produces is SYNTHETIC, for prototype demonstration only, and is labelled 'SAMPLE DATA — Prototype Simulation'. It is not, and must never be presented as, a real government or field observation.",
   "seed": 20261008,
   "crop": "rice",
   "window_days": 21,

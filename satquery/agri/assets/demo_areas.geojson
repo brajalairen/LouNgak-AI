@@ -1,7 +1,7 @@
 {
   "type": "FeatureCollection",
-  "name": "SatQuery AG-04 demo monitoring areas",
-  "note": "Demo monitoring RECTANGLES over Manipur valley farmland, drawn by the team for the prototype. They are NOT administrative boundaries. Place names come from OpenStreetMap Nominatim reverse geocoding of each rectangle's centre (ODbL, checked 2026-10-08). District boundaries will come from Member B's verified dataset.",
+  "name": "LouNgak AI demo monitoring areas",
+  "note": "Demo monitoring RECTANGLES over Manipur valley farmland, drawn by the team for the prototype. They are NOT administrative boundaries. Place names come from OpenStreetMap Nominatim reverse geocoding of each rectangle's centre (ODbL, checked 2026-10-08). Optional district outlines are loaded separately (SATQUERY_AGRI_DISTRICTS).",
   "features": [
     {
       "type": "Feature",

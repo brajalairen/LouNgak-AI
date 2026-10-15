@@ -175,7 +175,7 @@ export interface RouteResult {
   rule: string;
   /** For "mixed": what to do instead. */
   message: string | null;
-  /** The question's language, read from its words (Latin Manipuri via Member A's lexicon). */
+  /** The question's language, read from its words (Latin Manipuri via the reviewed lexicon). */
   language: "english" | "latin_manipuri";
   /** The common intent (e.g. "AREA_RISK_QUERY") the route answers, when one applies. */
   intent: string | null;

@@ -1,7 +1,7 @@
 {
   "version": "0.1-placeholder",
   "status": "PLACEHOLDER",
-  "note": "PLACEHOLDER weights, level cut-points and scoring breakpoints, chosen only to develop and test the risk engine. They are operating choices to be reviewed with Member A and the Department of Agriculture, not validated values.",
+  "note": "PLACEHOLDER weights, level cut-points and scoring breakpoints, chosen only to develop and test the risk engine. They are operating choices to be reviewed with agronomists and the Department of Agriculture, not validated values.",
   "sources": [],
   "weights": {
     "weather_pest": 0.5,

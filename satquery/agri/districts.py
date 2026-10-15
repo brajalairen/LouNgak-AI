@@ -9,7 +9,7 @@ monitoring coverage is not available there, which is not the same as no risk.
 
 Names come from `assets/manipur_district_names.json` (OpenStreetMap, to be confirmed). Verified
 district boundaries are optional: `SATQUERY_AGRI_DISTRICTS` (or `assets/manipur_districts.geojson`)
-adds outlines as context only once Member B delivers them; none are drawn without that file.
+adds outlines as context only (see docs/geo/); none are drawn without that file.
 """
 
 import json

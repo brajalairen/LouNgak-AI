@@ -1,7 +1,7 @@
 {
   "version": "0.1-placeholder",
   "status": "PLACEHOLDER",
-  "note": "PLACEHOLDER thresholds, chosen only to develop and test the risk engine. They are NOT taken from a verified agronomic source and must not be presented as validated. Member A replaces each value with a verified threshold and its citation (see TEAM_TASKS.md, pest_rules_sources.md), then sets status to VERIFIED with verified_by and verified_on on every source.",
+  "note": "PLACEHOLDER thresholds, chosen only to develop and test the risk engine. They are NOT taken from a verified agronomic source and must not be presented as validated. To replace them, set each value to a verified threshold with its citation, then set status to VERIFIED with verified_by and verified_on on every source (the loader refuses VERIFIED without them).",
   "min_hours_per_day": 20,
   "pests": [
     {

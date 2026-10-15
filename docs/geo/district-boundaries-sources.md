@@ -1,4 +1,4 @@
-# Member B: sources for the Manipur district boundaries
+# Sources for the Manipur district boundaries
 
 ## Status: local only, not in this repository
 
@@ -6,7 +6,7 @@ The district file `data/geo/manipur_districts.geojson` is derived from Survey of
 
 To show the outlines on a machine that has the file, set `SATQUERY_AGRI_DISTRICTS` to its full path before starting the server. Without it, the dashboard shows no outlines and says so.
 
-The outlines are map context only. AG-04 scores monitoring zones, never districts.
+The outlines are map context only. LouNgak AI scores monitoring zones, never districts.
 
 ## Dataset
 
@@ -29,7 +29,7 @@ As stated in the SoI metadata:
 
 ## Where it was downloaded
 
-Downloaded by Member B on 2026-10-08 from the main Survey of India website, not from the Online Maps Portal. There is therefore no portal product code.
+Downloaded on 2026-10-08 from the main Survey of India website, not from the Online Maps Portal. There is therefore no portal product code.
 
 | | Data | Metadata |
 |---|---|---|
@@ -53,7 +53,7 @@ Files used from the archive (folder `District_Subdistrict_PAN INDIA`):
 | `District Boundary.cpg` | `3ad3031f5503a4404af825262ee8232cc04d4ea6683d42c5dd0a2f2a27ac9824` |
 | `DISTRICT BOUNDARY.xlsx` (metadata) | `6b05a2497fa8e6dd196c8534f75f8d8dcd76307b0132807e939adb886b72b21d` |
 
-The SoI `State Boundary` layer from the same archive was used only to check for gaps (see `geo_validation.md`).
+The SoI `State Boundary` layer from the same archive was used only to check for gaps (see [district-boundaries-validation.md](district-boundaries-validation.md)).
 
 ## Processing
 
@@ -64,8 +64,8 @@ Run on 2026-10-08 with [mapshaper](https://github.com/mbloch/mapshaper) 0.7.80 a
 2. **Simplify, then reproject.** Applied Ramer–Douglas–Peucker simplification with a 10 m threshold in EPSG:7755 metres. The borders are shared, so neighbouring districts stay gap-free. Then reprojected to WGS84 longitude/latitude (EPSG:4326, RFC 7946 GeoJSON) with 6 decimal places.
    `mapshaper -i manipur_lcc.shp encoding=utf8 -simplify dp interval=10m keep-shapes stats -proj wgs84 -o manipur_wgs84_10m.geojson precision=0.000001`
    Result: 36,750 of 54,876 vertices removed (67%), maximum displacement 9.999 m, no collapsed rings, no intersections. The threshold is below the stated ±12.5 m accuracy.
-3. **AG-04 schema.** Renamed the districts to their LGD names, added the LGD codes, and kept SoI's own name and code as raw traceability fields (`soi_district_name`, `soi_dist_lgd`). Each feature has `id` (`mn-<name>`), `name`, `district`, `kind: "district"`, `state: "Manipur"`, `boundary_source`, `lgd_district_code`, `lgd_state_code: "14"`, `soi_district_name`, `soi_dist_lgd`, and `note` where a name differs.
-4. **Validation.** Recorded in `geo_validation.md`.
+3. **Application schema.** Renamed the districts to their LGD names, added the LGD codes, and kept SoI's own name and code as raw traceability fields (`soi_district_name`, `soi_dist_lgd`). Each feature has `id` (`mn-<name>`), `name`, `district`, `kind: "district"`, `state: "Manipur"`, `boundary_source`, `lgd_district_code`, `lgd_state_code: "14"`, `soi_district_name`, `soi_dist_lgd`, and `note` where a name differs.
+4. **Validation.** Recorded in [district-boundaries-validation.md](district-boundaries-validation.md).
 
 Output: 16 features, 30,781 vertices, 677 KB, SHA-256 `9424a9ec8015e074d3786c19b1ce0063d1714dbae268f1ff31475401c6ea13fd`.
 
@@ -96,9 +96,9 @@ Names and codes follow the Local Government Directory (LGD), using its `district
 - LGD lists district code **717** as "Kamjong".
 - The district administration's website ([kamjong.nic.in](https://kamjong.nic.in/about-district/)) calls it "KAMJONG DISTRICT", created by Government of Manipur notification No.16/20/2016-R dated 06-12-2016.
 
-The SoI polygon is the only one in that location, east of Ukhrul, its parent district. AG-04 shows **Kamjong** in `id`, `name` and `district`. `KAMJANG` and `670` appear only in the raw traceability fields and the feature's `note`.
+The SoI polygon is the only one in that location, east of Ukhrul, its parent district. LouNgak AI shows **Kamjong** in `id`, `name` and `district`. `KAMJANG` and `670` appear only in the raw traceability fields and the feature's `note`.
 
-**SoI's `DIST_LGD` is not the LGD code.** For the nine districts that existed in 2011 it equals the Census 2011 district code, which LGD records separately as `census2011Code`. For the seven districts created in 2016 it matches neither code. AG-04 never uses it as an LGD code.
+**SoI's `DIST_LGD` is not the LGD code.** For the nine districts that existed in 2011 it equals the Census 2011 district code, which LGD records separately as `census2011Code`. For the seven districts created in 2016 it matches neither code. LouNgak AI never uses it as an LGD code.
 
 ## Terms and attribution
 

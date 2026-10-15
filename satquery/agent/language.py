@@ -1,12 +1,12 @@
 """Language and intent normalisation for agricultural questions, before the existing router (D-006).
 
-A question is read as concepts ("risk", "where", "first", ...): Latin Manipuri forms come from Member A's lexicon
-(Member_A/agri_terms_manipuri.json: its terms by category, and its cue words), English forms from the
+A question is read as concepts ("risk", "where", "first", ...): Latin Manipuri forms come from the reviewed lexicon
+(satquery/agri/assets/agri_terms_manipuri.json: its terms by category, and its cue words), English forms from the
 word classes below. The intent rules are written on concepts only, so one rule serves English, Latin Manipuri and
 code-mixed questions ("Kanagumba area high risk da lei?"), and no sentence is listed anywhere.
 
-The result is a common intent (the team's vocabulary, team/member-a-agronomy/README.md); INTENTS maps each one onto
-the existing AG-04 behaviour that answers it. Wording only: no I/O beyond reading the lexicon once.
+The result is a common intent (the INTENTS keys below); INTENTS maps each one onto
+the existing behaviour that answers it. Wording only: no I/O beyond reading the lexicon once.
 """
 
 import json

@@ -1,6 +1,6 @@
 """Latin Manipuri and English questions reach the same common intent, and the existing router answers it.
 
-Manipuri words come from Member A's files, never from this test: the verified-for-routing examples are the
+Manipuri words come from the reviewed data files, never from this test: the verified-for-routing examples are the
 entries of manipuri_queries.json, and where no sentence exists yet (crop health, pest risk) a question is a
 word sequence built from the lexicon's own forms. Those sequences exercise the rules; they are not presented
 as verified Manipuri sentences.
@@ -38,7 +38,7 @@ def labelled(intent: str) -> str:
 
 
 def opening(key: str) -> str:
-    """The Latin Manipuri wording a message starts with, up to its first slot (from Member A's templates file)."""
+    """The Latin Manipuri wording a message starts with, up to its first slot (from the reviewed templates file)."""
     return mni.say(key, LATIN_MANIPURI, **{slot: "\0" for slot in mni.SLOT.findall(mni.MESSAGES[key])}).split("\0")[0]
 
 

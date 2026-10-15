@@ -2,7 +2,7 @@
 the same Latin lexicon and rules as one typed in Latin script.
 
 The Latin spelling is the one of the corpus's `romanstandard` column (CompiledDataEnglishToMeitei.xlsx), which
-Member A's lexicon uses: a consonant carries an inherent "a" unless a vowel sign or apun iyek follows, the long
+the reviewed lexicon uses: a consonant carries an inherent "a" unless a vowel sign or apun iyek follows, the long
 vowel sign is "ā", and a lonsum (final) letter carries no vowel. Where romanstandard itself spells one thing
 several ways, the most frequent spelling is used (word-initial ꯏ as "ee", ꯥꯎ as "ao", no vowel at apun). This is a
 fixed transliteration, not a translation: no word is looked up or guessed, and text in any other script passes
