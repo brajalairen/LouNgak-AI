@@ -21,6 +21,10 @@ diagrams have editable Mermaid sources next to them.
 | 5 Show and explain | `satquery/agri/routes.py` (`/api/agri/*`); `web/src/agri/` (`RiskLayer`, `PriorityPanel`, `AreaRiskDrawer`, `StatusStrip`) |
 | Imagery questions | `satquery/agent/` (intent, plan, execution, aggregation), `satquery/specialists/` (VLM, analysis tools, weather), `satquery/providers/copernicus.py` (Sentinel-1/2 retrieval), `satquery/raster_analysis.py` |
 | Manipuri answers | `satquery/agri/answer_language.py` with templates in `satquery/agri/assets/manipuri_responses.json` |
+| Alerts (LouNgak Watch) | `satquery/watch/alerts.py` (`derive`: heavy rain, crop health, pest/disease watch) from the assessment; rules in `satquery/watch/assets/alert_rules.json`; `web/src/pages/WatchPage.tsx` |
+| Field operations | `satquery/ops/` (`service.py` workflow and permissions, `users.py` demo accounts, `routes.py` `/api/ops/*`, `seed.py`); `satquery/store.py` (SQLite); `web/src/pages/` (`FieldOpsPage`, `MyTasksPage`, `ReportPage`, `MyReportsPage`) |
+| Grid and Crop Atlas | `satquery/grid.py` (H3 resolution 8, `/api/grid/zones`), `web/src/map/H3Layer.tsx`; `satquery/atlas/` (`/api/atlas/crops`), `web/src/pages/AtlasPage.tsx` |
+| App shell and roles | `web/src/shell/` (`useSession` demo account and page, `AppShell` top bar); `web/src/App.tsx` |
 
 ## Risk engine parameters (placeholders)
 
@@ -53,3 +57,6 @@ be replaced by reviewed copies (`SATQUERY_AGRI_RISK_MODEL`, `SATQUERY_AGRI_PEST_
   stay in English.
 - **Conversation and voice mode.** Not part of the application; a design note for adding it later is kept on the
   `future/conversation-voice-stub` branch.
+- **Real authentication.** Demo accounts are switched freely; the server enforces their role and jurisdiction.
+- **Official warning ingestion** (IMD, CWC, NDMA), per-cell analysis on the H3 grid, a cropland mask, and farmer
+  reports feeding the risk score. See [Context/refined_foundation.md](../Context/refined_foundation.md).
