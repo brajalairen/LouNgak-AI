@@ -1,0 +1,121 @@
+{
+  "version": "0.1-draft",
+  "status": "DRAFT",
+  "note": "DRAFT crop profiles for the prototype. They have NOT been reviewed by an agronomist, KVK or the Manipur Department of Agriculture. Each section states its status: SOURCED (from the cited general reference), TO_VERIFY (widely stated but not yet checked against a Manipur source) or SOURCE_NEEDED (left empty on purpose until a reliable regional source is found). Management information points to official IPM packages; LouNgak AI does not prescribe treatments.",
+  "sources": [
+    {"id": "ipm-rice", "title": "Integrated Pest Management Package for Rice", "publisher": "NCIPM / Directorate of Plant Protection, Quarantine & Storage (DPPQ&S)", "year": "2014", "url": "https://niphm.gov.in/IPMPackages/Rice.pdf"},
+    {"id": "irri-rkb", "title": "Rice Knowledge Bank: growth stages of the rice plant", "publisher": "International Rice Research Institute (IRRI)", "year": null, "url": "http://www.knowledgebank.irri.org/"},
+    {"id": "gi-registry", "title": "Geographical Indications Registry: Chak-Hao (black rice of Manipur)", "publisher": "Office of the Controller General of Patents, Designs & Trade Marks, Government of India", "year": "2020", "url": "https://ipindia.gov.in/registered-gls.htm"},
+    {"id": "iimr", "title": "ICAR-Indian Institute of Maize Research", "publisher": "ICAR", "year": null, "url": "https://iimr.icar.gov.in/"},
+    {"id": "isu-corn", "title": "Corn Growth and Development (PMR 1009)", "publisher": "Iowa State University Extension (Abendroth et al.)", "year": "2011", "url": "https://store.extension.iastate.edu/product/6065"},
+    {"id": "loungak-pest-sources", "title": "Pest and disease data: source assessment", "publisher": "LouNgak AI project (docs/pest-data-sources.md)", "year": "2026", "url": "docs/pest-data-sources.md"}
+  ],
+  "crops": [
+    {
+      "id": "rice",
+      "name": "Rice (paddy)",
+      "scientific_name": "Oryza sativa L.",
+      "local_names": [{"name": "Phou (paddy), Chak (cooked rice)", "language": "Manipuri, Latin script", "status": "TO_VERIFY"}],
+      "category": "Cereal",
+      "summary": "The principal food crop of Manipur, grown mainly as kharif (monsoon-season) paddy in the valley and on terraces and jhum fields in the hills. LouNgak AI's first monitoring target.",
+      "sections": [
+        {"title": "Importance in Manipur", "status": "TO_VERIFY", "sources": [],
+         "items": ["Staple food crop of the state; the valley districts (Imphal East, Imphal West, Thoubal, Bishnupur, Kakching) hold most of the wet-rice area.",
+                   "Area and production figures: SOURCE_NEEDED (Manipur Department of Agriculture / data.gov.in district statistics)."]},
+        {"title": "Season and crop calendar (valley, kharif)", "status": "TO_VERIFY", "sources": [],
+         "items": ["Nursery: about May-June. Transplanting: about June-July. Harvest: about October-November.",
+                   "Dates vary with elevation, variety and rainfall onset; a district crop calendar from the Department of Agriculture or ICAR Research Complex for NEH Region (Manipur Centre) is needed before these dates drive any rule."]},
+        {"title": "Growth stages", "status": "SOURCED", "sources": ["irri-rkb"],
+         "items": ["Vegetative phase: germination, seedling, tillering, stem elongation.",
+                   "Reproductive phase: panicle initiation, booting, heading, flowering.",
+                   "Ripening phase: milk, dough, mature grain."]},
+        {"title": "Common pests", "status": "SOURCED", "sources": ["ipm-rice"],
+         "items": ["Yellow stem borer (Scirpophaga incertulas): dead hearts at tillering, white ears at heading.",
+                   "Rice leaf folder (Cnaphalocrocis medinalis): folded leaves with scraped, whitish streaks.",
+                   "Rice gall midge (Orseolia oryzae): tubular 'silver shoot' galls instead of panicles.",
+                   "Brown planthopper (Nilaparvata lugens): 'hopper burn', circular patches of drying plants.",
+                   "Regional prevalence in Manipur: SOURCE_NEEDED (no public Manipur surveillance dataset was found; see the source assessment)."]},
+        {"title": "Common diseases", "status": "SOURCED", "sources": ["ipm-rice"],
+         "items": ["Blast (Magnaporthe oryzae): spindle-shaped leaf lesions; neck blast breaks the panicle neck.",
+                   "Bacterial leaf blight (Xanthomonas oryzae pv. oryzae): wavy yellowing from the leaf tips and margins.",
+                   "Sheath blight (Rhizoctonia solani): oval greenish-grey lesions on the leaf sheath near the water line.",
+                   "Brown spot (Bipolaris oryzae): small oval brown spots on leaves and grains."]},
+        {"title": "Weather sensitivities", "status": "TO_VERIFY", "sources": ["ipm-rice"],
+         "items": ["Long leaf-wetness and high humidity favour blast; LouNgak's blast weather rule is a PLACEHOLDER awaiting agronomist review.",
+                   "Heavy rain at flowering and harvest can cause lodging and grain loss; prolonged submergence damages young transplants."]},
+        {"title": "Management", "status": "SOURCED", "sources": ["ipm-rice"],
+         "items": ["Follow the IPM Package for Rice and local KVK advice: field scouting, economic threshold levels (ETL, Table 3.1.2 of the package) and recommended practices.",
+                   "LouNgak AI does not recommend pesticides or doses."]}
+      ],
+      "monitoring": {
+        "can": ["Vegetation vigour (NDVI) of clear land in monitored zones against the same dates in earlier years (Sentinel-2).",
+                "Surface water and waterlogging on demand for a drawn area (Sentinel-2 NDWI, Sentinel-1 radar when cloudy).",
+                "Forecast heavy rain at each zone's weather point (Open-Meteo), against IMD rainfall categories.",
+                "Weather conducive to blast or brown planthopper under PLACEHOLDER rules (a watch, not a detection)."],
+        "cannot": ["Identify a pest or disease, or confirm its presence.",
+                   "Tell rice from other vegetation in a zone (no crop map is loaded).",
+                   "Know the growth stage of a field unless a farmer or officer records it."]
+      },
+      "related_alerts": ["weather", "pest", "disease", "crop_health"],
+      "last_reviewed": null
+    },
+    {
+      "id": "chakhao",
+      "name": "Chak-hao (black rice of Manipur)",
+      "scientific_name": "Oryza sativa L. (aromatic, glutinous black-pericarp landraces)",
+      "local_names": [{"name": "Chak-hao", "language": "Manipuri, Latin script", "status": "SOURCED"}],
+      "category": "Cereal (rice landrace group)",
+      "summary": "Scented, glutinous black rice of Manipur, registered as a Geographical Indication. Profiled separately from rice because its value, varieties and markets differ; its agronomy and pests follow rice.",
+      "sections": [
+        {"title": "Geographical Indication", "status": "SOURCED", "sources": ["gi-registry"],
+         "items": ["Registered as a Geographical Indication ('Chak-Hao') in 2020. The application number and registered proprietor are to be confirmed in the GI Journal."]},
+        {"title": "Characteristics", "status": "TO_VERIFY", "sources": [],
+         "items": ["Black to purple grain from anthocyanin pigments in the bran; aromatic and glutinous (sticky) when cooked.",
+                   "Traditionally used for festive dishes such as chak-hao kheer (rice pudding)."]},
+        {"title": "Varieties", "status": "SOURCE_NEEDED", "sources": [],
+         "items": ["Named Chak-hao landraces differ by district and community; list only varieties documented by CAU Imphal, ICAR RC NEH Manipur Centre or the GI dossier."]},
+        {"title": "Season, growth stages, pests and diseases", "status": "TO_VERIFY", "sources": ["irri-rkb", "ipm-rice"],
+         "items": ["Grown in the kharif season like other valley paddy; see the Rice profile for growth stages, pests and diseases.",
+                   "Landrace-specific susceptibility (for example to blast or lodging): SOURCE_NEEDED."]}
+      ],
+      "monitoring": {
+        "can": ["The same zone-level observations as rice."],
+        "cannot": ["Distinguish Chak-hao fields from other paddy from space.",
+                   "Assess grain quality, aroma or GI compliance."]
+      },
+      "related_alerts": ["weather", "pest", "disease", "crop_health"],
+      "last_reviewed": null
+    },
+    {
+      "id": "maize",
+      "name": "Maize",
+      "scientific_name": "Zea mays L.",
+      "local_names": [{"name": "SOURCE_NEEDED", "language": "Manipuri", "status": "SOURCE_NEEDED"}],
+      "category": "Cereal",
+      "summary": "Grown in Manipur's hill and valley districts, often on upland and jhum fields. LouNgak AI's second monitoring priority after rice.",
+      "sections": [
+        {"title": "Importance and distribution in Manipur", "status": "SOURCE_NEEDED", "sources": [],
+         "items": ["District area, seasons and main uses: SOURCE_NEEDED (Manipur Department of Agriculture / district statistics)."]},
+        {"title": "Growth stages", "status": "SOURCED", "sources": ["isu-corn"],
+         "items": ["Vegetative: emergence (VE), leaf stages (V1 to Vn), tasselling (VT).",
+                   "Reproductive: silking (R1), blister (R2), milk (R3), dough (R4), dent (R5), physiological maturity (R6)."]},
+        {"title": "Common pests", "status": "SOURCED", "sources": ["iimr"],
+         "items": ["Fall armyworm (Spodoptera frugiperda): an invasive pest first reported in India in 2018; ragged feeding holes and sawdust-like frass in the whorl.",
+                   "Maize stem borer (Chilo partellus): shot holes in leaves, dead hearts in young plants.",
+                   "Regional prevalence in Manipur: SOURCE_NEEDED."]},
+        {"title": "Common diseases", "status": "SOURCED", "sources": ["iimr"],
+         "items": ["Turcicum leaf blight (Exserohilum turcicum): long cigar-shaped grey-green lesions.",
+                   "Maydis leaf blight (Bipolaris maydis): smaller tan lesions between the veins.",
+                   "Common rust (Puccinia sorghi): brick-red pustules on both leaf surfaces."]},
+        {"title": "Management", "status": "SOURCED", "sources": ["iimr"],
+         "items": ["Follow ICAR-IIMR and KVK advisories, including the national fall armyworm advisories. LouNgak AI does not recommend pesticides or doses."]}
+      ],
+      "monitoring": {
+        "can": ["Zone-level vegetation vigour and weather context, as for rice, where maize grows inside a monitored zone."],
+        "cannot": ["Locate maize fields (no crop map is loaded); maize-specific weather rules are not yet defined."]
+      },
+      "related_alerts": ["weather", "pest", "crop_health"],
+      "last_reviewed": null
+    }
+  ]
+}

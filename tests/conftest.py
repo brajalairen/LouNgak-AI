@@ -1,5 +1,10 @@
 """Synthetic raster factories: tests never depend on downloaded data or model weights."""
 
+import os
+
+# Field-operations records live in memory during tests (set before satquery.server builds its app on import).
+os.environ["SATQUERY_DB_PATH"] = ":memory:"
+
 import numpy as np
 import pytest
 import rasterio

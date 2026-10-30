@@ -513,15 +513,22 @@ def _examples() -> list[Example]:
 
 
 def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = analyze,
-               agri_service: "AssessmentService | None" = None) -> FastAPI:
+               agri_service: "AssessmentService | None" = None, ops_store: "Store | None" = None) -> FastAPI:
     """`run_analysis` is injected so a host can wrap it. `agri_service` serves the risk dashboard's
-    assessments; tests inject one with fake sources."""
+    assessments; tests inject one with fake sources. `ops_store` holds reports, tasks and alert
+    acknowledgements (default: the SQLite file at SATQUERY_DB_PATH)."""
     from satquery.agri import query as agri_query
     from satquery.agri.routes import agri_router
     from satquery.agri.service import AssessmentService
+    from satquery.atlas import atlas_router
+    from satquery.grid import grid_router
+    from satquery.ops.routes import ops_router
+    from satquery.ops.service import OpsService
+    from satquery.store import Store
 
     settings = load_settings()
     agri = agri_service or AssessmentService()
+    ops = OpsService(ops_store or Store(settings.db_path), agri)
     store = UploadStore(directory=_uploads_dir(settings))
     upload_limit = settings.max_upload_mb * 1024 * 1024
     too_large = f"the file is larger than the {settings.max_upload_mb} MB upload limit (SATQUERY_MAX_UPLOAD_MB)"
@@ -1028,7 +1035,11 @@ def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = ana
         media = {".png": "image/png", ".html": "text/html", ".json": "application/json"}
         return FileResponse(path, media_type=media.get(path.suffix.lower(), "application/octet-stream"))
 
-    app.include_router(agri_router(agri))  # before the static mount, which would otherwise shadow it
+    # Before the static mount, which would otherwise shadow them.
+    app.include_router(agri_router(agri))
+    app.include_router(ops_router(ops))
+    app.include_router(grid_router(agri.areas))
+    app.include_router(atlas_router())
 
     if WEB_DIST.is_dir():  # production: one origin serves the API and the built client
         app.mount("/", StaticFiles(directory=WEB_DIST, html=True), name="web")

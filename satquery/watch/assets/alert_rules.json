@@ -1,0 +1,27 @@
+{
+  "version": "0.1",
+  "note": "Alert rules for LouNgak Watch. Each rule states its status: SOURCED (thresholds taken from a named authority; still to be confirmed against the original), PLACEHOLDER (an engineering choice, not agronomically verified) or UNVALIDATED (a rule whose agronomic thresholds are placeholders). An alert from a PLACEHOLDER or UNVALIDATED rule is published only as a qualified watch, never as a validated warning.",
+  "heavy_rain": {
+    "status": "SOURCED",
+    "source": "India Meteorological Department (IMD) terminology for 24-hour rainfall intensity: heavy 64.5-115.5 mm, very heavy 115.6-204.4 mm, extremely heavy 204.5 mm or more (IMD forecast glossary, mausam.imd.gov.in). To be confirmed against the current IMD glossary.",
+    "min_hours_known": 20,
+    "categories": [
+      {"id": "extremely_heavy", "label": "Extremely heavy rain", "min_mm": 204.5, "priority": "high"},
+      {"id": "very_heavy", "label": "Very heavy rain", "min_mm": 115.6, "priority": "high"},
+      {"id": "heavy", "label": "Heavy rain", "min_mm": 64.5, "priority": "moderate"}
+    ],
+    "limitation": "IMD's categories describe 24-hour rainfall at a place. Here they are applied to a weather model's daily forecast total for one grid point per zone, not to an IMD forecast or warning. A heavy-rain forecast is not evidence of flooding or crop damage."
+  },
+  "crop_health": {
+    "status": "PLACEHOLDER",
+    "min_factor_score": 0.3,
+    "valid_days": 7,
+    "limitation": "NDVI measures vegetation vigour over all clear land in the zone (crops, trees, grass), not cropland alone. A drop can come from harvest, sowing timing, water stress, flooding or land-cover change; it is not a disease or pest diagnosis. October-November is the kharif paddy harvest period in the Manipur valley, so a seasonal drop is expected."
+  },
+  "pest_watch": {
+    "status": "UNVALIDATED",
+    "min_favourable_forecast_days": 1,
+    "disease_rules": ["rice_blast"],
+    "limitation": "The pest and disease weather rules are PLACEHOLDERS awaiting agronomist review (satquery/agri/assets/pest_rules.json). Conducive weather is not evidence that a pest or disease is present; only field scouting can show that."
+  }
+}

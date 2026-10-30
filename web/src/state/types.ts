@@ -595,3 +595,299 @@ export interface AgriQueryResult {
   /** The common intent the question was read as; null when it must be rephrased. */
   common_intent: string | null;
 }
+
+/* ------------------------------------------------------------------ field operations & LouNgak Watch
+ * Mirrors satquery/ops/models.py, satquery/watch/alerts.py, satquery/grid.py and satquery/atlas.
+ * Category, priority and evidence status are separate fields on purpose: a forecast can be high
+ * priority and still only a forecast. */
+
+export type Role = "farmer" | "field_officer" | "district_officer" | "state_officer";
+export type Priority = "low" | "moderate" | "high" | "urgent";
+export type ReportCategory = "pest" | "disease" | "crop_damage" | "waterlogging" | "weather_damage" | "other";
+export type CropId = "rice" | "chakhao" | "maize" | "other" | "unknown";
+export type ReportStatus =
+  | "SUBMITTED"
+  | "UNDER_REVIEW"
+  | "INSPECTION_ASSIGNED"
+  | "INSPECTED"
+  | "FOLLOW_UP"
+  | "DISMISSED";
+export type TaskStatus = "NEW" | "ASSIGNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+export type OutcomeResult =
+  | "CONCERN_OBSERVED"
+  | "CONCERN_NOT_OBSERVED"
+  | "INCONCLUSIVE"
+  | "DIFFERENT_ISSUE"
+  | "FOLLOW_UP_REQUIRED";
+export type AlertCategory = "weather" | "pest" | "disease" | "crop_health" | "water_flood" | "environment";
+export type EvidenceStatus =
+  | "forecast"
+  | "rule_triggered"
+  | "satellite_observed"
+  | "farmer_reported"
+  | "field_verified"
+  | "official_warning";
+export type CropCondition = "normal" | "stressed" | "damaged" | "not_visible";
+export type WaterCondition = "none" | "waterlogged" | "flooded" | "dry";
+
+export interface DemoUser {
+  id: string;
+  name: string;
+  role: Role;
+  /** A configurable job title, not an official designation. */
+  title: string;
+  /** Jurisdiction; empty means every district (state level). */
+  districts: string[];
+  is_demo: boolean;
+}
+
+export interface OpsPeople {
+  users: DemoUser[];
+  note: string;
+}
+
+export interface StatusChange {
+  status: string;
+  at: string;
+  by: string;
+  by_name: string;
+  note: string | null;
+}
+
+export interface OfficerNote {
+  at: string;
+  by: string;
+  by_name: string;
+  text: string;
+}
+
+export interface ReportCreate {
+  category: ReportCategory;
+  crop: CropId;
+  growth_stage: string | null;
+  description: string;
+  latitude: number;
+  longitude: number;
+  location_source: "map_pin" | "device_gps";
+  district: string;
+  consent: boolean;
+}
+
+export interface FarmerReport {
+  id: string;
+  category: ReportCategory;
+  crop: CropId;
+  growth_stage: string | null;
+  description: string;
+  latitude: number;
+  longitude: number;
+  location_source: "map_pin" | "device_gps";
+  district: string;
+  h3_cell: string;
+  zone_id: string | null;
+  reporter_id: string;
+  reporter_name: string;
+  submitted_at: string;
+  status: ReportStatus;
+  evidence_status: "farmer_reported_unverified";
+  task_id: string | null;
+  public_outcome: string | null;
+  history: StatusChange[];
+  /** Internal; always empty in a farmer's own view. */
+  officer_notes: OfficerNote[];
+  is_demo: boolean;
+}
+
+export interface OutcomeCreate {
+  result: OutcomeResult;
+  observed_crop: CropId;
+  growth_stage: string | null;
+  crop_condition: CropCondition;
+  symptoms: string | null;
+  /** A suspicion, not a diagnosis. */
+  suspected_issue: string | null;
+  water_condition: WaterCondition | null;
+  action_taken: string | null;
+  follow_up: string | null;
+  public_summary: string;
+  gps_latitude: number | null;
+  gps_longitude: number | null;
+  gps_accuracy_m: number | null;
+}
+
+export interface InspectionOutcome {
+  result: OutcomeResult;
+  observed_crop: CropId;
+  growth_stage: string | null;
+  crop_condition: CropCondition;
+  symptoms: string | null;
+  suspected_issue: string | null;
+  water_condition: WaterCondition | null;
+  action_taken: string | null;
+  follow_up: string | null;
+  public_summary: string;
+  gps_latitude: number | null;
+  gps_longitude: number | null;
+  gps_accuracy_m: number | null;
+  recorded_by: string;
+  recorded_by_name: string;
+  recorded_at: string;
+  evidence_status: "field_observed_officer";
+}
+
+export interface TaskCreate {
+  report_ids: string[];
+  alert_ids: string[];
+  reason: string;
+  priority: Priority;
+  priority_rationale: string[];
+  assigned_to: string | null;
+  due_on: string | null;
+}
+
+export interface InspectionTask {
+  id: string;
+  report_ids: string[];
+  alert_ids: string[];
+  latitude: number;
+  longitude: number;
+  h3_cell: string;
+  district: string;
+  zone_id: string | null;
+  crop: string;
+  reason: string;
+  priority: Priority;
+  priority_rationale: string[];
+  created_by: string;
+  created_at: string;
+  assigned_to: string | null;
+  assigned_to_name: string | null;
+  due_on: string | null;
+  status: TaskStatus;
+  history: StatusChange[];
+  outcome: InspectionOutcome | null;
+  is_demo: boolean;
+}
+
+export interface QueueItem {
+  kind: "report" | "alert";
+  id: string;
+  title: string;
+  district: string | null;
+  zone_id: string | null;
+  priority: Priority;
+  evidence_status: string;
+  /** Why it sits where it does in the queue, in words. */
+  reasons: string[];
+  created_at: string;
+  latitude: number;
+  longitude: number;
+  is_demo: boolean;
+}
+
+export interface ZoneSituation {
+  zone_id: string;
+  zone_name: string;
+  district: string | null;
+  alerts_by_category: Record<string, number>;
+  reports_open: number;
+  tasks_open: number;
+  tasks_completed: number;
+  outcomes: Record<string, number>;
+}
+
+export interface Alert {
+  id: string;
+  category: AlertCategory;
+  subtype: string;
+  title: string;
+  summary: string;
+  priority: Priority;
+  evidence_status: EvidenceStatus;
+  /** qualified_watch: published only with its limitations stated (placeholder or unvalidated rule). */
+  gate: "published" | "qualified_watch";
+  rule_id: string;
+  rule_status: "SOURCED" | "PLACEHOLDER" | "UNVALIDATED" | "DEMO";
+  zone_id: string;
+  zone_name: string;
+  district: string | null;
+  label_point: [number, number];
+  issued_at: string;
+  valid_from: string;
+  valid_until: string;
+  evidence: string[];
+  limitations: string[];
+  recommended_action: string;
+  provenance: AgriProvenance[];
+  status: "active" | "acknowledged";
+  acknowledged_by: string | null;
+  acknowledged_at: string | null;
+  is_demo: boolean;
+}
+
+export interface WatchOverview {
+  computed_at: string;
+  assessment_mode: "live" | "snapshot";
+  categories: Record<AlertCategory, string>;
+  counts: Record<AlertCategory, number>;
+  alerts: Alert[];
+  notes: string[];
+}
+
+export interface GridZones {
+  resolution: number;
+  mean_cell_area_km2: number;
+  cell_count: number;
+  note: string;
+  /** Properties: cell, zone_id, zone_name, district. */
+  cells: GeoJSON.FeatureCollection<GeoJSON.Polygon>;
+}
+
+export type SectionStatus = "SOURCED" | "TO_VERIFY" | "SOURCE_NEEDED";
+
+export interface AtlasSource {
+  id: string;
+  title: string;
+  publisher: string;
+  year: string | null;
+  url: string;
+}
+
+export interface LocalName {
+  name: string;
+  language: string;
+  status: SectionStatus;
+}
+
+export interface CropSection {
+  title: string;
+  status: SectionStatus;
+  sources: string[];
+  items: string[];
+}
+
+export interface CropMonitoring {
+  can: string[];
+  cannot: string[];
+}
+
+export interface CropProfile {
+  id: string;
+  name: string;
+  scientific_name: string;
+  local_names: LocalName[];
+  category: string;
+  summary: string;
+  sections: CropSection[];
+  monitoring: CropMonitoring;
+  related_alerts: string[];
+  last_reviewed: string | null;
+}
+
+export interface CropAtlas {
+  version: string;
+  status: "DRAFT" | "REVIEWED";
+  note: string;
+  sources: AtlasSource[];
+  crops: CropProfile[];
+}

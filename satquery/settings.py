@@ -69,6 +69,9 @@ class Settings:
     agri_snapshot: str = ""          # frozen snapshot file; empty means runs/agri/snapshot.json
     agri_warmup: bool = True         # compute the first assessment in the background when the server starts
 
+    # --- field operations (farmer reports, inspections, alert acknowledgements) ---
+    db_path: str = "data/loungak.sqlite3"  # SQLite file (gitignored); ":memory:" keeps nothing between runs
+
     @property
     def weather_enabled(self) -> bool:
         """Whether weather questions can be answered. Safe to expose: it reveals no credential."""
@@ -113,4 +116,5 @@ def load_settings() -> Settings:
         agri_mode=env("SATQUERY_AGRI_MODE", defaults.agri_mode).strip().lower(),
         agri_snapshot=env("SATQUERY_AGRI_SNAPSHOT", defaults.agri_snapshot),
         agri_warmup=env("SATQUERY_AGRI_WARMUP", "1").strip().lower() not in ("0", "false", "no", "off"),
+        db_path=env("SATQUERY_DB_PATH", defaults.db_path),
     )

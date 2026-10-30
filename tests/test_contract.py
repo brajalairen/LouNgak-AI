@@ -6,8 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from satquery import schemas, server
+from satquery import atlas, grid, schemas, server
 from satquery.agri import models as agri_models, routes as agri_routes
+from satquery.ops import models as ops_models
+from satquery.watch import alerts
 
 TYPES_TS = Path(__file__).resolve().parent.parent / "web" / "src" / "state" / "types.ts"
 
@@ -50,6 +52,28 @@ MIRRORED = {
     "AgriAreaDetail": agri_routes.AgriAreaDetail,
     "AgriQueryResult": agri_routes.AgriQueryResult,
     "DistrictSummary": agri_routes.DistrictSummary,
+    # Field operations, LouNgak Watch, grid and Crop Atlas
+    "DemoUser": ops_models.DemoUser,
+    "OpsPeople": ops_models.OpsPeople,
+    "StatusChange": ops_models.StatusChange,
+    "OfficerNote": ops_models.OfficerNote,
+    "ReportCreate": ops_models.ReportCreate,
+    "FarmerReport": ops_models.FarmerReport,
+    "OutcomeCreate": ops_models.OutcomeCreate,
+    "InspectionOutcome": ops_models.InspectionOutcome,
+    "TaskCreate": ops_models.TaskCreate,
+    "InspectionTask": ops_models.InspectionTask,
+    "QueueItem": ops_models.QueueItem,
+    "ZoneSituation": ops_models.ZoneSituation,
+    "Alert": alerts.Alert,
+    "WatchOverview": alerts.WatchOverview,
+    "GridZones": grid.GridZones,
+    "AtlasSource": atlas.AtlasSource,
+    "LocalName": atlas.LocalName,
+    "CropSection": atlas.CropSection,
+    "CropMonitoring": atlas.CropMonitoring,
+    "CropProfile": atlas.CropProfile,
+    "CropAtlas": atlas.CropAtlas,
 }
 
 

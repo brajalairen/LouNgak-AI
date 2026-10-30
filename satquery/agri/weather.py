@@ -169,5 +169,16 @@ def summarise(weather: HourlyWeather, today: date) -> dict:
                 "hours_rh_at_or_above_90": sum(1 for v in values("relative_humidity_2m") if v >= 90),
                 "precipitation_mm": round(sum(rain), 1) if rain else None}
 
+    def daily(start: date, count: int) -> list[dict]:
+        """Per-day rain totals, with how many hours back each total, so a short day is never read as dry."""
+        out = []
+        for d in ((start + timedelta(days=i)).isoformat() for i in range(count)):
+            if d in days:
+                rain = [v for v in days[d]["precipitation"] if v is not None]
+                out.append({"date": d, "precipitation_mm": round(sum(rain), 1) if rain else None,
+                            "hours_known": len(rain)})
+        return out
+
     return {"past_7_days": figures(span(today - timedelta(days=7), 7)),
-            "next_7_days": figures(span(today, 7))}
+            "next_7_days": figures(span(today, 7)),
+            "forecast_daily": daily(today, 7)}
