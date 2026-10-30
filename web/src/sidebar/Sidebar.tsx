@@ -4,7 +4,7 @@
  *  switching sections never means losing sight of the others. Nothing advanced is reachable until
  *  the user asks for it. */
 
-import { CircleHelp, Layers, ListOrdered, MapPin, Search, Bookmark, SlidersHorizontal, X } from "lucide-react";
+import { CircleHelp, Layers, ListOrdered, MapPin, Search, Bookmark, X } from "lucide-react";
 import { useAppStore, type SidebarSection } from "../state/useAppStore";
 import { cx, IconButton, Surface } from "../ui/primitives";
 import { SearchPanel } from "./SearchPanel";
@@ -137,15 +137,5 @@ function NavRow({ icon: Icon, label, active, badge, onClick, className }: {
         </span>
       )}
     </button>
-  );
-}
-
-/** Shared empty state, so every panel says what to do next in the same voice. */
-export function EmptyState({ icon: Icon, children }: { icon: typeof SlidersHorizontal; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
-      <Icon className="h-5 w-5 text-faint" strokeWidth={1.5} />
-      <p className="text-[12px] leading-relaxed text-muted">{children}</p>
-    </div>
   );
 }

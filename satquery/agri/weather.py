@@ -14,7 +14,7 @@ from datetime import date, datetime, timedelta, timezone
 from satquery.agri.cache import JsonCache, cache_key
 from satquery.agri.models import DataState, Provenance
 from satquery.specialists.weather import (ATTRIBUTION, FORECAST_URL, InvalidWeatherResponse, NoForecastData,
-                                          WeatherRateLimited, WeatherTimeout, WeatherUnavailable, _scrub)
+                                          WeatherRateLimited, WeatherTimeout, WeatherUnavailable, scrub)
 
 HOURLY = ("temperature_2m", "relative_humidity_2m", "dew_point_2m", "precipitation")
 PAST_DAYS = 14
@@ -142,7 +142,7 @@ class HourlyWeatherClient:
             raise WeatherRateLimited("The weather provider is limiting requests right now.")
         if response.status_code >= 400:
             raise WeatherUnavailable(f"The weather provider could not answer (HTTP {response.status_code}).",
-                                     detail=_scrub(response.text) or None)
+                                     detail=scrub(response.text) or None)
         try:
             return response.json()
         except ValueError as error:

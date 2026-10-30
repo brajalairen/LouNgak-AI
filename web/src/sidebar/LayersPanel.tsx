@@ -8,7 +8,7 @@ import { ChevronDown, ChevronUp, Eye, EyeOff, ImageOff, Layers, Trash2 } from "l
 import { useAppStore, nextAnalysisSource, type Layer } from "../state/useAppStore";
 import { useMap, fitBounds } from "../map/MapView";
 import { Button, cx, inputClass, NotConnected, Segmented, SectionGroup, Tooltip } from "../ui/primitives";
-import { EmptyState } from "./Sidebar";
+import { EmptyState } from "../ui/primitives";
 import type { Modality } from "../state/types";
 
 export function LayersPanel() {

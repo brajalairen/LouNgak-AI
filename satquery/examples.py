@@ -1,6 +1,5 @@
-"""Shipped demo scenarios and example queries, shared by every front end.
+"""Shipped demo scenarios and example queries for the imagery questions.
 
-Kept separate from `ui.py` so the HTTP server can use them without importing Gradio.
 Manifest format: `demo/examples/README.md`.
 """
 

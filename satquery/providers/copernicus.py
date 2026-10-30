@@ -177,7 +177,7 @@ class CopernicusSentinelProvider:
 
     def __init__(self, client_id: str, client_secret: str, *, days_back: int = 30,
                  max_cloud: float = 20.0, max_aoi_km2: float = 400.0, resolution_m: float = 10.0,
-                 timeout: float = 90.0, cache_dir: Path | None = None):
+                 timeout: float = 90.0):
         if not client_id or not client_secret:
             raise CredentialsMissing(
                 "Copernicus credentials are not configured. Set COPERNICUS_CLIENT_ID and "
@@ -189,7 +189,6 @@ class CopernicusSentinelProvider:
         self.max_aoi_km2 = max_aoi_km2
         self.resolution_m = resolution_m
         self.timeout = timeout
-        self.cache_dir = cache_dir
         self._tokens = _TokenCache()
 
     # ----------------------------------------------------------------- http

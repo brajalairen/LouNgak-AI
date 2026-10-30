@@ -125,12 +125,6 @@ def decide(query: str, areas: list[MonitoredArea], selected_area_id: str | None 
     return AgriIntent(None, norm.rule)
 
 
-def is_agri(query: str, areas: list[MonitoredArea]) -> str | None:
-    """The rule that makes `query` a crop & pest risk question (to answer or to ask to rephrase), or None."""
-    found = decide(query, areas)
-    return found.rule if found else None
-
-
 def _cue_rule(query: str, areas: list[MonitoredArea]) -> str | None:
     """The English cue rule that makes `query` an agricultural risk question, or None. Wording only."""
     if INSPECT.search(query):

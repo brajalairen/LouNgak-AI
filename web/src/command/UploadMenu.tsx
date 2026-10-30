@@ -2,7 +2,7 @@
  *  the analysis pipeline accepts rasters only and pretending otherwise would be a lie. */
 
 import { useRef, useState } from "react";
-import { FileImage, FileText, Image, Layers3, Database } from "lucide-react";
+import { FileText, Image, Layers3, Database } from "lucide-react";
 import { api, ApiError } from "../state/api";
 import { inputsLabel, useAppStore } from "../state/useAppStore";
 import { useMap, fitBounds } from "../map/MapView";
@@ -101,4 +101,3 @@ export function UploadMenu({ open, onClose }: { open: boolean; onClose: () => vo
   );
 }
 
-export { FileImage };

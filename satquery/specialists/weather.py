@@ -210,7 +210,7 @@ def parse_forecast(payload, *, requested: tuple[float, float], retrieved_at: str
 # --------------------------------------------------------------------------- client
 
 
-def _scrub(text: str, secret: str = "", limit: int = 300) -> str:
+def scrub(text: str, secret: str = "", limit: int = 300) -> str:
     """Truncate an upstream message and withhold it entirely if it echoes a credential."""
     cleaned = " ".join(str(text).split())
     if (secret and secret in cleaned) or "apikey" in cleaned.lower():
@@ -279,7 +279,7 @@ class OpenMeteoWeather:
             except Exception:
                 reason = response.text
             raise WeatherUnavailable(f"The weather provider could not answer (HTTP {response.status_code}).",
-                                     detail=_scrub(reason, self._api_key) or None)
+                                     detail=scrub(reason, self._api_key) or None)
         try:
             return response.json()
         except ValueError as error:

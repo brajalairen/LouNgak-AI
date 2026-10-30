@@ -182,7 +182,7 @@ function syncOverlays(map: MapLibreMap, overlays: OverlayLayer[]) {
 }
 
 const AOI_SOURCE = "aoi";
-const AOI_LAYERS = ["aoi-fill", "aoi-line", "aoi-point"];
+const AOI_LAYERS = ["aoi-fill", "aoi-line"];
 
 function syncAoi(map: MapLibreMap, feature: GeoJSON.Feature | null) {
   const empty: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] };
@@ -210,18 +210,6 @@ function syncAoi(map: MapLibreMap, feature: GeoJSON.Feature | null) {
     source: AOI_SOURCE,
     filter: ["!=", ["geometry-type"], "Point"],
     paint: { "line-color": "#2563eb", "line-width": 1.75, "line-dasharray": [2, 1.5] },
-  });
-  map.addLayer({
-    id: "aoi-point",
-    type: "circle",
-    source: AOI_SOURCE,
-    filter: ["==", ["geometry-type"], "Point"],
-    paint: {
-      "circle-radius": 6,
-      "circle-color": "#2563eb",
-      "circle-stroke-width": 2,
-      "circle-stroke-color": "#ffffff",
-    },
   });
 }
 

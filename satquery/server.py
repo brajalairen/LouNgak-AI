@@ -1,6 +1,6 @@
 """HTTP layer for the map-first web client.
 
-Presentation only, the same tier as `ui.py` and `cli.py`: it builds an `AnalysisRequest`, calls the
+Presentation only: it builds an `AnalysisRequest`, calls the
 injected analysis function, and rewrites on-disk artifact paths into URLs the browser can fetch. It
 never imports specialists or the agent directly.
 
@@ -60,7 +60,7 @@ class Upload:
 
 @dataclass
 class UploadStore:
-    """In-process registry. Uploads live for the lifetime of the server, like Gradio's temp files."""
+    """In-process registry. Uploads live for the lifetime of the server."""
 
     directory: Path
     _items: dict[str, Upload] = field(default_factory=dict)
@@ -514,8 +514,8 @@ def _examples() -> list[Example]:
 
 def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = analyze,
                agri_service: "AssessmentService | None" = None) -> FastAPI:
-    """`run_analysis` is injected so a host can wrap it (e.g. `spaces.GPU`), as `build_demo` does.
-    `agri_service` serves the risk dashboard's assessments; tests inject one with fake sources."""
+    """`run_analysis` is injected so a host can wrap it. `agri_service` serves the risk dashboard's
+    assessments; tests inject one with fake sources."""
     from satquery.agri import query as agri_query
     from satquery.agri.routes import agri_router
     from satquery.agri.service import AssessmentService

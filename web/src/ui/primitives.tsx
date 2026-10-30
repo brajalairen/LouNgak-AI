@@ -13,6 +13,7 @@ import {
   type ButtonHTMLAttributes,
   type ReactNode,
 } from "react";
+import type { LucideIcon } from "lucide-react";
 
 export function cx(...parts: (string | false | null | undefined)[]): string {
   return parts.filter(Boolean).join(" ");
@@ -271,6 +272,16 @@ export function Spinner({ className }: { className?: string }) {
       <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" strokeOpacity="0.25" strokeWidth="2" />
       <path d="M14.5 8A6.5 6.5 0 0 0 8 1.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </svg>
+  );
+}
+
+/** Shared empty state, so every panel says what to do next in the same voice. */
+export function EmptyState({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
+  return (
+    <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
+      <Icon className="h-5 w-5 text-faint" strokeWidth={1.5} />
+      <p className="text-[12px] leading-relaxed text-muted">{children}</p>
+    </div>
   );
 }
 

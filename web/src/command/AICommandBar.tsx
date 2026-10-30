@@ -1,6 +1,12 @@
 /** The bottom command bar: add something, ask about it, optionally by voice. */
 
 import { useEffect, useRef, useState } from "react";
+import { ArrowUp, Plus, SquareDashed } from "lucide-react";
+import { PROGRESS_LABELS, inputsLabel, nextAnalysisSource, useAppStore } from "../state/useAppStore";
+import { api } from "../state/api";
+import { Spinner, Surface, cx, IconButton } from "../ui/primitives";
+import { UploadMenu } from "./UploadMenu";
+import { VoiceInput } from "./VoiceInput";
 
 /** Seconds since this mounted, i.e. since the analysis started. */
 function Elapsed() {
@@ -12,12 +18,6 @@ function Elapsed() {
   }, []);
   return <span className="tabular-nums">{seconds} s</span>;
 }
-import { ArrowUp, Plus, SquareDashed } from "lucide-react";
-import { PROGRESS_LABELS, inputsLabel, nextAnalysisSource, useAppStore } from "../state/useAppStore";
-import { api } from "../state/api";
-import { Spinner, Surface, cx, IconButton } from "../ui/primitives";
-import { UploadMenu } from "./UploadMenu";
-import { VoiceInput } from "./VoiceInput";
 
 export function AICommandBar() {
   const [query, setQuery] = useState("");

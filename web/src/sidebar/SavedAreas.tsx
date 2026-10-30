@@ -4,7 +4,7 @@ import { Bookmark, Trash2 } from "lucide-react";
 import { useAppStore } from "../state/useAppStore";
 import { useMap, fitBounds } from "../map/MapView";
 import { Button } from "../ui/primitives";
-import { EmptyState } from "./Sidebar";
+import { EmptyState } from "../ui/primitives";
 import { describeBounds } from "./AreaSelectionTools";
 
 export function SavedAreas() {

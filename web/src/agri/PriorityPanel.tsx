@@ -6,7 +6,7 @@
  *  a monitored zone has no level at all: monitoring coverage is not available there, which is not "no risk". */
 
 import { ArrowLeft, MapPinned, RotateCw } from "lucide-react";
-import { EmptyState } from "../sidebar/Sidebar";
+import { EmptyState } from "../ui/primitives";
 import type { AgriOverview, AreaSummary, DistrictSummary } from "../state/types";
 import { Button, cx, Segmented, Spinner } from "../ui/primitives";
 import { CompletenessBar, DemoTag, LevelBadge, StateChip } from "./badges";

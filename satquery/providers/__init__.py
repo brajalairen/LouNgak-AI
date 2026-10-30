@@ -8,7 +8,6 @@ imports this package.
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Protocol
 
 
 @dataclass(frozen=True)
@@ -50,14 +49,3 @@ class RetrievedScene:
     path: Path
     metadata: SceneMetadata
     extra: dict = field(default_factory=dict)
-
-
-class SatelliteDataProvider(Protocol):
-    """Any imagery source. One method, so a second provider stays cheap to add."""
-
-    name: str
-
-    def retrieve(self, bbox_wgs84: tuple[float, float, float, float], bands: list[str],
-                 destination: Path) -> RetrievedScene:
-        """Fetch imagery covering `bbox_wgs84` and write a GeoTIFF to `destination`."""
-        ...
