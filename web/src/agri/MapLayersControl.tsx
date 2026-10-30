@@ -66,6 +66,8 @@ export function MapLayersControl() {
           <Heading divider>Risk &amp; monitoring</Heading>
           <Check label="Monitoring zones" checked={layers.zones} onToggle={() => toggleLayer("zones")} />
           <Check label="Priority markers (#1, #2…)" checked={layers.ranks} onToggle={() => toggleLayer("ranks")} />
+          <Check label="H3 grid cells (zoom in)" checked={layers.cells} onToggle={() => toggleLayer("cells")} />
+          <Check label="Reports and inspections" checked={layers.fieldops} onToggle={() => toggleLayer("fieldops")} />
 
           <p className="mt-1 border-t border-line px-3 pt-2 pb-1 text-[10px] leading-relaxed text-faint">
             Display only. Risk is scored per monitored agricultural zone; districts are context and are never coloured

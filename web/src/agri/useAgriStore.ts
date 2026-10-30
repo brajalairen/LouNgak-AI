@@ -13,6 +13,8 @@ export interface MapLayers {
   zones: boolean;      // monitored agricultural zones, filled by their engine level
   ranks: boolean;      // priority rank markers
   districts: boolean;  // verified district outlines (context), when loaded
+  cells: boolean;      // the H3 monitoring grid over the zones
+  fieldops: boolean;   // farmer reports and inspection tasks the account may see
 }
 
 interface AgriState {
@@ -58,7 +60,7 @@ export const useAgriStore = create<AgriState>((set, get) => ({
   error: null,
   filter: "all",
   districtName: null,
-  layers: { zones: true, ranks: true, districts: true },
+  layers: { zones: true, ranks: true, districts: true, cells: true, fieldops: true },
   selectedId: null,
   hoveredId: null,
   highlightIds: [],

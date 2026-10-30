@@ -11,6 +11,7 @@ export default defineConfig({
     proxy: { "/api": { target: "http://127.0.0.1:8000", changeOrigin: true } },
   },
   build: { outDir: "dist", sourcemap: true },
-  // `npm test`: unit tests for the drawing geometry and the store, in a DOM without a real map.
+  // `npm test`: unit tests for the drawing geometry and the stores, and page smoke tests, in a DOM
+  // without a real map.
   test: { environment: "jsdom", include: ["src/**/*.test.ts"] },
 });

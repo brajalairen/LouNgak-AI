@@ -39,9 +39,8 @@ export function Sidebar() {
   const layerCount = useAppStore((s) => s.layers.length);
 
   return (
-    // Starts 64 px down (56 px on small screens) to leave room for the LouNgak AI wordmark above it
-    // (ui/BrandMark.tsx), which is sized and placed to fit that space.
-    <div className="pointer-events-none absolute top-16 bottom-4 left-4 z-30 flex items-start max-sm:top-14">
+    // The LouNgak AI wordmark lives in the app's top bar (shell/AppShell.tsx), so the rail starts at the top.
+    <div className="pointer-events-none absolute top-4 bottom-4 left-4 z-30 flex items-start">
       {open && section ? (
         // Expanded: one panel. Its own nav list (every section, labelled) stays visible above the
         // active section's content, so switching sections never hides the others.

@@ -5,15 +5,44 @@ import type {
   AgriAreaDetail,
   AgriOverview,
   AgriQueryResult,
+  Alert,
   AnalyzeResult,
+  CropAtlas,
   Example,
+  FarmerReport,
   FetchImageryResult,
+  GridZones,
   Health,
+  InspectionTask,
   Modality,
+  OpsPeople,
+  OutcomeCreate,
+  QueueItem,
+  ReportCreate,
   RouteResult,
+  TaskCreate,
   TaskType,
   UploadInfo,
+  WatchOverview,
+  ZoneSituation,
 } from "./types";
+
+/** The demo account sent with field-operations requests (X-Demo-User). Set by the session store; the
+ *  server applies that account's role and jurisdiction. Not authentication: see satquery/ops/users.py. */
+let demoUser: string | null = null;
+export function setDemoUser(id: string | null) {
+  demoUser = id;
+}
+
+function asUser(init: RequestInit = {}): RequestInit {
+  const headers = new Headers(init.headers);
+  if (demoUser) headers.set("X-Demo-User", demoUser);
+  return { ...init, headers };
+}
+
+function postJson(body: unknown): RequestInit {
+  return asUser({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+}
 
 export class ApiError extends Error {
   constructor(
@@ -176,6 +205,28 @@ export const api = {
         aoi_geometry: options.aoiGeometry ?? null,
       }),
     }),
+
+  /* ---------------------------------------------------------------- field operations & LouNgak Watch */
+
+  opsUsers: () => request<OpsPeople>("/api/ops/users"),
+  situation: () => request<ZoneSituation[]>("/api/ops/situation", asUser()),
+  reports: () => request<FarmerReport[]>("/api/ops/reports", asUser()),
+  createReport: (body: ReportCreate) => request<FarmerReport>("/api/ops/reports", postJson(body)),
+  reviewReport: (id: string, body: { action: "under_review" | "dismiss" | "note"; note?: string; public_note?: string }) =>
+    request<FarmerReport>(`/api/ops/reports/${encodeURIComponent(id)}/review`, postJson(body)),
+  queue: () => request<QueueItem[]>("/api/ops/queue", asUser()),
+  tasks: () => request<InspectionTask[]>("/api/ops/tasks", asUser()),
+  createTask: (body: TaskCreate) => request<InspectionTask>("/api/ops/tasks", postJson(body)),
+  assignTask: (id: string, assignedTo: string, dueOn: string | null) =>
+    request<InspectionTask>(`/api/ops/tasks/${encodeURIComponent(id)}/assign`,
+      postJson({ assigned_to: assignedTo, due_on: dueOn })),
+  startTask: (id: string) => request<InspectionTask>(`/api/ops/tasks/${encodeURIComponent(id)}/start`, postJson({})),
+  recordOutcome: (id: string, body: OutcomeCreate) =>
+    request<InspectionTask>(`/api/ops/tasks/${encodeURIComponent(id)}/outcome`, postJson(body)),
+  watch: () => request<WatchOverview>("/api/watch/alerts"),
+  acknowledgeAlert: (id: string) => request<Alert>(`/api/watch/alerts/${encodeURIComponent(id)}/ack`, postJson({})),
+  gridZones: () => request<GridZones>("/api/grid/zones"),
+  atlas: () => request<CropAtlas>("/api/atlas/crops"),
 };
 
 /**
