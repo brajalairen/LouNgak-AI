@@ -252,23 +252,34 @@ As in foundation_v1 §16, phases 2–4. Nothing there is claimed until built and
 
 ## 9. Demo script and deck outline
 
-**Video (3–5 min), one story:**
-1. *(20 s)* The problem: officers cannot inspect every field, farmers' reports are scattered, and satellite and
-   weather data are hard to act on.
-2. *(40 s)* **Public visitor → Alerts.** Real alerts from today's weather; open one to show evidence,
-   limitations and sources, then point at the separate priority, evidence and rule chips.
-3. *(40 s)* **Farmer (Bishnupur) → Report an issue.** Drop a pin, describe the problem, send; it shows as
-   "unverified".
-4. *(50 s)* **District officer (Bishnupur) → Field Operations.** The queue explains its order (the report is
-   raised by the DEMO heavy-rain alert in the same zone). Approve an inspection and assign it.
-5. *(40 s)* **Field officer → My inspections.** Record "Concern observed" with a message for the farmer.
-6. *(20 s)* **Farmer → My reports.** The progress bar shows *Inspected*, with the officer's message.
-7. *(30 s)* **State officer → Situation Monitor.** Zones, the H3 cells (zoom in), the pins; the "Why is this
-   area at risk?" panel; ask *Which areas are high risk?*
-8. *(20 s)* **Crop Atlas** (Chak-hao), then close with the SDGs and the Manipur pilot.
+> **Update (31 Oct, after the agricultural map):** the script below replaces the pre-map version (it used to say
+> "Situation Monitor: zones, H3 cells, pins" for the old 7-rectangle map). It now opens on the statewide map,
+> which is the strongest visual, and closes the full report to inspection to outcome loop on camera.
 
-Before recording: `python -m satquery.ops reset`, then `python -m satquery.ops seed-demo`, start the server, and
-open each page once so the assessment is warm.
+**Video (3-5 min), one story, recorded in presentation mode (`SHOW_LABELS` off, the default):**
+1. *(15 s)* **Open on the state map, Satellite basemap, zoomed out.** Let all 16 districts and the crop-coloured
+   farmland cells sit on screen for a few seconds before narrating. State the problem over it: officers cannot
+   inspect every field, farmers' reports are scattered, satellite and weather data are hard to act on.
+2. *(20 s)* **Zoom into Bishnupur, click a hexagon.** The summary card: crop composition, cropland %, the zone's
+   risk badge. Say once, on camera: "crop types here are an illustrative pattern; risk is from real weather and
+   satellite data." Do not let the zoomed-out map sit on screen while narrating in detail - zoom in first.
+3. *(20 s)* **"View details" then "Why is this zone flagged?"** The score breakdown (weather, NDVI, pest-report
+   factors, each weighted, with reasons and the PLACEHOLDER/confidence notices). This is the differentiator:
+   every number traces to its source, never a bare colour.
+4. *(20 s)* **Create an inspection from that cell's active alert**, directly on the map. Proves the loop is
+   actionable from the exact place the risk was found, not just a separate workflow.
+5. *(15 s)* **Farmer (Bishnupur) to Report an issue.** Drop a pin, describe the problem, send; it shows as
+   "unverified".
+6. *(20 s)* **District officer (Bishnupur) to Field Operations.** The queue explains its order in words (the
+   report is raised because it matches an active alert in the same zone). Approve the inspection, assign it.
+7. *(20 s)* **Field officer to My inspections.** Record "Concern observed" with a message for the farmer.
+8. *(15 s)* **Farmer to My reports.** The progress bar shows *Inspected*, with the officer's message - the loop
+   closes on camera.
+9. *(15 s)* **Close** on the Alerts page (evidence/limitation chips) or Crop Atlas (Chak-hao), then the SDGs and
+   the Manipur pilot.
+
+Before recording: `python -m satquery.ops reset`, then `python -m satquery.ops seed-demo`, start the server, warm
+the assessment (`python -m satquery.agri warm --save-snapshot --crop-health`), and open each page once.
 
 > **Update (31 Oct):** the portal's template is the HSC one (cover, problem and solution, technical approach, impact,
 > feasibility and risk, team, references). The deck was built on it: `HFSS/LouNgak_AI_HSC_Presentation.pptx`, with

@@ -202,4 +202,5 @@ Full register: [refined_foundation.md §10](refined_foundation.md#10-decisions-r
 |---|---|---|---|
 | 31 Oct 2026, 00:45–02:30 IST | User + Claude | Audit; cleanup; Sprint 0 backend and frontend; README; Context docs | Browser click-through, video, deck, submit |
 | 31 Oct 2026, 09:10–14:15 IST | User + Claude | Agricultural map: WorldCover cropland, SAMPLE crops, zone risk on cells, OSM districts, layers panel, search and filters, cell summary and details; legacy map UI removed. Fixed the blank page after leaving the map and added an error boundary. Presentation mode (DEMO/SAMPLE labels hidden by default). 7-slide HSC deck built. Docs brought current; full checks and security audit; map work committed, pushed and `main` fast-forwarded (team lead's approval) | Fill in the deck placeholders; record the demo video; save the deck as PDF; submit |
+| 31 Oct 2026, 14:30 IST | User + Claude | Rewrote the demo video script (refined_foundation.md §9) for the new agricultural map — the old one still described the pre-map "zoom in, the pins" flow on the 7-rectangle map | Record the video; save the deck as PDF; submit |
 | _date_ | _who_ | _what changed_ | _what's next_ |
