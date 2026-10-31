@@ -55,7 +55,9 @@ describe("pages render real server responses", () => {
     const officerText = await render(WatchPage, "district-bishnupur");
     expect(officerText).toContain("LouNgak Watch");
     expect(officerText).toContain("Create inspection");
-    expect(officerText).toContain("Demo");
+    // Presentation mode (the default) shows the seeded alert without its DEMO wording or chip.
+    expect(officerText).toContain("Heavy rain forecast near Bishnupur");
+    expect(officerText).not.toMatch(/DEMO|Demo/);
   });
 
   it("Field Operations: the queue with its reasons", async () => {

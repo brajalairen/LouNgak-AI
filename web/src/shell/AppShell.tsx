@@ -5,6 +5,7 @@ import { Moon, Sun } from "lucide-react";
 import { useAppStore } from "../state/useAppStore";
 import { cx, IconButton, Tooltip } from "../ui/primitives";
 import { pagesFor, useSession } from "./useSession";
+import { SHOW_LABELS } from "../ui/presentation";
 
 export function TopBar() {
   const users = useSession((s) => s.users);
@@ -25,12 +26,14 @@ export function TopBar() {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <Tooltip label={note || "Demo accounts"} side="bottom">
-            <span className="rounded-[4px] border border-warn/60 bg-warn/10 px-1.5 py-px text-[10px] font-semibold tracking-wide text-warn uppercase">
-              Demo accounts
-            </span>
-          </Tooltip>
-          <label className="sr-only" htmlFor="demo-account">Demo account</label>
+          {SHOW_LABELS && (
+            <Tooltip label={note || "Demo accounts"} side="bottom">
+              <span className="rounded-[4px] border border-warn/60 bg-warn/10 px-1.5 py-px text-[10px] font-semibold tracking-wide text-warn uppercase">
+                Demo accounts
+              </span>
+            </Tooltip>
+          )}
+          <label className="sr-only" htmlFor="demo-account">Account</label>
           <select
             id="demo-account"
             value={user?.id ?? ""}

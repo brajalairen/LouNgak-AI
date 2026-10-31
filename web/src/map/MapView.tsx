@@ -2,7 +2,7 @@
  *  the uploaded rasters, the evidence overlays from a result, and the drawn area of interest. */
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { Map as MapLibreMap, type GeoJSONSource, type ErrorEvent } from "maplibre-gl";
+import { Map as MapLibreMap, ScaleControl, type GeoJSONSource, type ErrorEvent } from "maplibre-gl";
 import { basemapStyle, INITIAL_VIEW, offlineStyle, styleKey } from "./basemap";
 import { useShallow } from "zustand/react/shallow";
 import { useAppStore, visibleOverlays, type Layer } from "../state/useAppStore";
@@ -66,6 +66,8 @@ export function MapView({ children }: { children?: ReactNode }) {
       attributionControl: { compact: true },
       renderWorldCopies: false, // stops a raster being drawn twice across the antimeridian
     });
+    // Added here, not by a child: controls must live and die with the map (see the cleanup below).
+    instance.addControl(new ScaleControl({ maxWidth: 110, unit: "metric" }), "bottom-left");
     instance.on("style.load", () => setStyleReady(true));
     instance.on("error", (event: ErrorEvent) => {
       // A failed tile fetch must not take the app down: fall back to a plain canvas.
@@ -76,6 +78,9 @@ export function MapView({ children }: { children?: ReactNode }) {
     });
     mapRef.current = instance;
     setMap(instance);
+    // React runs this before the children's cleanups when the page closes, so the children meet an
+    // already-removed map: they may only unsubscribe (`map.off`) and remove markers, never call
+    // removeControl/removeLayer, which throw on a removed map and would blank the whole app.
     return () => {
       instance.remove();
       mapRef.current = null;

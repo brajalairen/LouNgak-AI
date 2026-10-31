@@ -1,22 +1,20 @@
-/** Left sidebar, one panel that widens rather than a separate rail-plus-popover: collapsed it is a
- *  narrow icon rail with the everyday actions; expanded it becomes a single wider panel whose own
+/** Left sidebar, one panel that widens rather than a separate rail-plus-popover: collapsed (as the map
+ *  opens) it is a narrow icon rail with the priority list and the imagery tools; expanded it becomes a single wider panel whose own
  *  nav list (every section, labelled) stays visible above whichever section's content is open, so
  *  switching sections never means losing sight of the others. Nothing advanced is reachable until
  *  the user asks for it. */
 
-import { CircleHelp, Layers, ListOrdered, MapPin, Search, Bookmark, X } from "lucide-react";
+import { CircleHelp, Layers, ListOrdered, MapPin, Bookmark, X, type LucideIcon } from "lucide-react";
 import { useAppStore, type SidebarSection } from "../state/useAppStore";
 import { cx, IconButton, Surface } from "../ui/primitives";
-import { SearchPanel } from "./SearchPanel";
 import { AreaSelectionTools } from "./AreaSelectionTools";
 import { LayersPanel } from "./LayersPanel";
 import { SavedAreas } from "./SavedAreas";
 import { HelpPanel } from "./HelpPanel";
 import { PriorityPanel } from "../agri/PriorityPanel";
 
-const ITEMS: { id: Exclude<SidebarSection, null>; label: string; icon: typeof Search }[] = [
+const ITEMS: { id: Exclude<SidebarSection, null>; label: string; icon: LucideIcon }[] = [
   { id: "priority", label: "Priority areas (crop & pest risk)", icon: ListOrdered },
-  { id: "search", label: "Search location", icon: Search },
   { id: "select", label: "Select area", icon: MapPin },
   { id: "layers", label: "Images and imagery settings", icon: Layers },
   { id: "saved", label: "Saved areas", icon: Bookmark },
@@ -24,7 +22,6 @@ const ITEMS: { id: Exclude<SidebarSection, null>; label: string; icon: typeof Se
 
 const TITLES: Record<Exclude<SidebarSection, null>, string> = {
   priority: "Priority areas",
-  search: "Search location",
   select: "Select area",
   layers: "Images",
   saved: "Saved areas",
@@ -69,7 +66,6 @@ export function Sidebar() {
           <div className="mt-1 min-h-0 flex-1 overflow-y-auto overscroll-contain border-t border-line">
             <h2 className="px-4 pt-3 pb-1 text-[11px] font-semibold tracking-wide text-muted uppercase">{TITLES[section]}</h2>
             {section === "priority" && <PriorityPanel />}
-            {section === "search" && <SearchPanel />}
             {section === "select" && <AreaSelectionTools />}
             {section === "layers" && <LayersPanel />}
             {section === "saved" && <SavedAreas />}
@@ -107,7 +103,7 @@ export function Sidebar() {
 /** One labelled row of the expanded panel's nav list: the same sections the collapsed rail shows as
  *  icons alone, now with text, so every section stays visible and reachable while one is open. */
 function NavRow({ icon: Icon, label, active, badge, onClick, className }: {
-  icon: typeof Search;
+  icon: LucideIcon;
   label: string;
   active: boolean;
   badge?: number;

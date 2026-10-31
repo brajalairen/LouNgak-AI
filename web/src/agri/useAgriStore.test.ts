@@ -75,7 +75,7 @@ beforeEach(() => {
   useAgriStore.setState({
     overview: null, status: "idle", error: null, filter: "all", selectedId: null, hoveredId: null,
     highlightIds: [], detail: null, detailStatus: "idle", detailError: null, answer: null,
-    districtName: null, layers: { zones: true, ranks: true, districts: true, cells: true, fieldops: true },
+    districtName: null,
   });
 });
 
@@ -163,18 +163,11 @@ describe("agricultural questions", () => {
   });
 });
 
-describe("district drill-down and map layers", () => {
+describe("district drill-down", () => {
   it("opens and closes a district without touching the zone drawer", () => {
     useAgriStore.getState().setDistrict("Bishnupur");
     expect(useAgriStore.getState()).toMatchObject({ districtName: "Bishnupur", selectedId: null });
     useAgriStore.getState().setDistrict(null);
     expect(useAgriStore.getState().districtName).toBeNull();
-  });
-
-  it("toggles one map layer at a time; nothing else changes", () => {
-    const before = useAgriStore.getState().overview;
-    useAgriStore.getState().toggleLayer("ranks");
-    expect(useAgriStore.getState().layers).toEqual({ zones: true, ranks: false, districts: true, cells: true, fieldops: true });
-    expect(useAgriStore.getState().overview).toBe(before);
   });
 });

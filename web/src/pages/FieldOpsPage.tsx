@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { api } from "../state/api";
+import { SHOW_LABELS } from "../ui/presentation";
 import type { FarmerReport, InspectionTask, QueueItem } from "../state/types";
 import { Button, Segmented } from "../ui/primitives";
 import { useSession } from "../shell/useSession";
@@ -90,7 +91,10 @@ function Queue({ items, error }: { items: QueueItem[] | null; error: string | nu
             {item.is_demo && <DemoChip />}
           </div>
           <h3 className="mt-2 text-[14px] font-semibold text-ink">{item.title}</h3>
-          <p className="text-[12px] text-muted">{item.id} · {item.district ?? "—"} · {when(item.created_at)}</p>
+          <p className="text-[12px] text-muted">
+            {/* An alert id is an internal key built from the zone id; presentation mode names the kind instead. */}
+            {item.kind === "alert" && !SHOW_LABELS ? "Alert" : item.id} · {item.district ?? "—"} · {when(item.created_at)}
+          </p>
           <ul className="mt-2 list-disc space-y-0.5 pl-4 text-[12px] text-ink">
             {item.reasons.map((r) => <li key={r}>{r}</li>)}
           </ul>

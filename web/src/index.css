@@ -122,6 +122,33 @@ body {
   color: rgb(var(--text-muted)) !important;
 }
 
+/* District names on the agricultural map: DOM labels (no map fonts needed), haloed in the surface tone so
+   they read over cells, imagery and either theme, and click-through so the cell beneath stays clickable. */
+.ag-district-label {
+  pointer-events: none;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgb(var(--text));
+  text-shadow: 0 0 2px rgb(var(--surface)), 0 0 4px rgb(var(--surface)), 0 0 6px rgb(var(--surface));
+  white-space: nowrap;
+}
+
+/* Rows of tabs or filters that scroll sideways on a narrow screen, without a scrollbar in the way. */
+.scroll-quiet {
+  scrollbar-width: none;
+}
+.scroll-quiet::-webkit-scrollbar {
+  display: none;
+}
+
+.maplibregl-ctrl-scale {
+  background: rgb(var(--surface) / 0.8) !important;
+  border-color: rgb(var(--text-muted)) !important;
+  color: rgb(var(--text)) !important;
+  font-size: 10px !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

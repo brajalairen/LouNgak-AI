@@ -28,6 +28,7 @@ import {
 } from "./format";
 import { useAgriStore } from "./useAgriStore";
 import { useAppStore } from "../state/useAppStore";
+import { SHOW_LABELS } from "../ui/presentation";
 
 export function AreaRiskDrawer() {
   const selectedId = useAgriStore((s) => s.selectedId);
@@ -460,7 +461,7 @@ function ReportsSection({ factor, label }: { factor?: FactorResult; label: strin
   const reports: PestReport[] = factor.details.reports ?? [];
   return (
     <div className="flex flex-col gap-2">
-      {factor.sample_data && (
+      {factor.sample_data && SHOW_LABELS && (
         <p className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
           <SampleLabel text={label} /> Synthetic reports, not real field observations.
         </p>
@@ -473,7 +474,7 @@ function ReportsSection({ factor, label }: { factor?: FactorResult; label: strin
               <span className="w-[74px] shrink-0 text-muted tabular-nums">{r.observed_on}</span>
               <span className="flex-1 text-ink capitalize">{pestName(r.pest)}</span>
               <span className="text-muted">{r.severity}</span>
-              <span className="rounded-[4px] border border-warn/50 px-1 text-[9px] font-semibold text-warn">SAMPLE</span>
+              {SHOW_LABELS && <span className="rounded-[4px] border border-warn/50 px-1 text-[9px] font-semibold text-warn">SAMPLE</span>}
             </li>
           ))}
         </ul>

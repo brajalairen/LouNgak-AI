@@ -1,4 +1,4 @@
-/** Map controls: a compass top-right, zoom bottom-right. Subtle by design — they sit over the map
+/** Map controls: a compass above the zoom buttons, bottom left. Subtle by design — they sit over the map
  *  and should read as part of it rather than as a toolbar. */
 
 import { useEffect, useState } from "react";
@@ -30,7 +30,7 @@ export function CompassControl() {
   const label = oriented ? "Map is north-up" : "Reset orientation to north";
 
   return (
-    <Tooltip label={label} side="left">
+    <Tooltip label={label} side="right">
       <button
         type="button"
         aria-label={label}
@@ -52,11 +52,11 @@ export function ZoomControls() {
   const map = useMap();
   return (
     <Surface className="flex flex-col overflow-hidden p-0">
-      <IconButton label="Zoom in" side="left" onClick={() => map?.zoomIn({ duration: 200 })} className="rounded-none">
+      <IconButton label="Zoom in" side="right" onClick={() => map?.zoomIn({ duration: 200 })} className="rounded-none">
         <Plus className="h-4 w-4" strokeWidth={2} />
       </IconButton>
       <span className="mx-1.5 h-px bg-line" />
-      <IconButton label="Zoom out" side="left" onClick={() => map?.zoomOut({ duration: 200 })} className="rounded-none">
+      <IconButton label="Zoom out" side="right" onClick={() => map?.zoomOut({ duration: 200 })} className="rounded-none">
         <Minus className="h-4 w-4" strokeWidth={2} />
       </IconButton>
     </Surface>

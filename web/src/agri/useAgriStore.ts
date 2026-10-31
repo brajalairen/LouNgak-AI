@@ -8,15 +8,6 @@ import type { LevelFilter } from "./format";
 
 type Status = "idle" | "loading" | "ready" | "error";
 
-/** What the map draws. Presentation only: hiding a layer never changes any figure. */
-export interface MapLayers {
-  zones: boolean;      // monitored agricultural zones, filled by their engine level
-  ranks: boolean;      // priority rank markers
-  districts: boolean;  // verified district outlines (context), when loaded
-  cells: boolean;      // the H3 monitoring grid over the zones
-  fieldops: boolean;   // farmer reports and inspection tasks the account may see
-}
-
 interface AgriState {
   overview: AgriOverview | null;
   status: Status;
@@ -25,7 +16,6 @@ interface AgriState {
   filter: LevelFilter;
   /** The district open in the priority panel's drill-down (null: the district list). */
   districtName: string | null;
-  layers: MapLayers;
   /** The area whose "Why is this area at risk?" drawer is open. */
   selectedId: string | null;
   hoveredId: string | null;
@@ -41,7 +31,6 @@ interface AgriState {
   load: () => Promise<void>;
   setFilter: (filter: LevelFilter) => void;
   setDistrict: (name: string | null) => void;
-  toggleLayer: (layer: keyof MapLayers) => void;
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
   ask: (query: string, signal?: AbortSignal) => Promise<AgriQueryResult>;
@@ -60,7 +49,6 @@ export const useAgriStore = create<AgriState>((set, get) => ({
   error: null,
   filter: "all",
   districtName: null,
-  layers: { zones: true, ranks: true, districts: true, cells: true, fieldops: true },
   selectedId: null,
   hoveredId: null,
   highlightIds: [],
@@ -83,8 +71,6 @@ export const useAgriStore = create<AgriState>((set, get) => ({
   setFilter: (filter) => set({ filter }),
 
   setDistrict: (districtName) => set({ districtName }),
-
-  toggleLayer: (layer) => set((state) => ({ layers: { ...state.layers, [layer]: !state.layers[layer] } })),
 
   select: (id) => {
     if (id === null) {

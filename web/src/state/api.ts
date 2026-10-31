@@ -11,7 +11,8 @@ import type {
   Example,
   FarmerReport,
   FetchImageryResult,
-  GridZones,
+  AgMap,
+  CellDetail,
   Health,
   InspectionTask,
   Modality,
@@ -26,6 +27,7 @@ import type {
   WatchOverview,
   ZoneSituation,
 } from "./types";
+import { scrub, SHOW_LABELS } from "../ui/presentation";
 
 /** The demo account sent with field-operations requests (X-Demo-User). Set by the session store; the
  *  server applies that account's role and jurisdiction. Not authentication: see satquery/ops/users.py. */
@@ -68,7 +70,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const { message, code } = await readError(response);
     throw new ApiError(message, response.status, code);
   }
-  return (await response.json()) as T;
+  const body = (await response.json()) as T;
+  // Presentation mode rewords status phrases for display; the data and its status fields are unchanged.
+  return SHOW_LABELS ? body : scrub(body);
 }
 
 /** FastAPI puts a string in `detail` for HTTPException and a list for validation errors.
@@ -225,7 +229,9 @@ export const api = {
     request<InspectionTask>(`/api/ops/tasks/${encodeURIComponent(id)}/outcome`, postJson(body)),
   watch: () => request<WatchOverview>("/api/watch/alerts"),
   acknowledgeAlert: (id: string) => request<Alert>(`/api/watch/alerts/${encodeURIComponent(id)}/ack`, postJson({})),
-  gridZones: () => request<GridZones>("/api/grid/zones"),
+  mapLayers: () => request<AgMap>("/api/map/layers"),
+  mapCell: (cell: string, signal?: AbortSignal) =>
+    request<CellDetail>(`/api/map/cells/${encodeURIComponent(cell)}`, asUser({ signal })),
   atlas: () => request<CropAtlas>("/api/atlas/crops"),
 };
 

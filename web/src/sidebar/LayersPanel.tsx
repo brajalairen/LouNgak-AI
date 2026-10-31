@@ -23,7 +23,7 @@ export function LayersPanel() {
     return (
       <EmptyState icon={Layers}>
         No images yet. Use the <strong className="font-medium text-ink">+</strong> button in the command bar to add a
-        GeoTIFF, or open Help to try a demo scenario.
+        GeoTIFF, or open Help to try an example scenario.
       </EmptyState>
     );
   }

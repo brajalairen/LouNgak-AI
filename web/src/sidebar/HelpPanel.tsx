@@ -58,7 +58,7 @@ export function HelpPanel() {
 
       {examples.length > 0 && (
         <>
-          <h3 className="mt-5 mb-2 text-[11px] font-semibold tracking-wide text-ink uppercase">Try a demo scenario</h3>
+          <h3 className="mt-5 mb-2 text-[11px] font-semibold tracking-wide text-ink uppercase">Try an example scenario</h3>
           <ul className="-mx-1">
             {examples.map((example) => (
               <li key={example.index}>

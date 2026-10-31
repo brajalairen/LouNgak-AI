@@ -117,7 +117,7 @@ export function AICommandBar() {
               onClick={() => openSection("help")}
               className="font-medium text-accent underline-offset-2 hover:underline"
             >
-              try a demo scenario
+              try an example scenario
             </button>{" "}
             or add a GeoTIFF that covers the shape with <strong className="font-medium text-ink">+</strong>.
           </p>

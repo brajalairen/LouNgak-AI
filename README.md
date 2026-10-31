@@ -29,7 +29,7 @@ pest or disease is present, never issues official warnings and never prescribes 
 
 | Module | What you can do |
 |---|---|
-| **Situation Monitor** | A map of seven monitored farmland zones in the Manipur valley, coloured by the explainable risk engine, with an H3 hexagonal grid (resolution 8, ~0.74 km² cells), farmer reports and inspections, district drill-down, and a "Why is this area at risk?" panel with the score breakdown and data provenance. |
+| **Situation Monitor** | A statewide agricultural map on H3 hexagons (resolution 7, ~5.2 km² cells): where the farmland is (ESA WorldCover 2021), coloured by crop (a labelled SAMPLE pattern until crop-type data exists), with each monitored zone's risk level from the explainable risk engine, alerts, farmer reports, inspections and district boundaries, all switchable with their legends in one layers panel. Search and filter by district, crop or period; click a cell for its summary, then a detail panel (crops and land cover, risk, alerts, reports, inspections) with actions such as creating an inspection or opening the zone's "Why is this area at risk?" explanation. |
 | **LouNgak Watch** | Alerts by category (weather, pest, disease, crop health; water and environment are reserved), each showing its **priority**, **evidence status** (forecast / rule-triggered / satellite-observed …), **rule status** (sourced / placeholder / unvalidated / demo), validity, evidence, limitations and sources. |
 | **Report an issue** | Farmers report a suspected pest, disease, damage or waterlogging with a map pin or device location. Reports are stored as *unverified* and routed to the officer responsible for the district. |
 | **Field Operations** | Officers work a review queue of farmer reports and alerts, where every item states why it sits where it does. They approve inspections, assign field officers who cover the district, and see a per-zone summary. |
@@ -69,8 +69,9 @@ labelled DEMO and are not authentication, but the server enforces each account's
    inspection and assign it to the Bishnupur field officer.
 4. **Demo field officer (Bishnupur) → My inspections.** Start the inspection and record the outcome.
 5. **Back to the farmer → My reports.** The progress bar shows *Inspected*, with the officer's summary.
-6. **Demo state-level officer → Situation Monitor.** The zones, H3 cells, reports and inspections on the map; ask
-   *Which areas are high risk?*
+6. **Demo state-level officer → Situation Monitor.** Farmland by crop across Manipur, the zones' risk on their
+   cells, alerts, reports and inspections; click a cell for its summary and details; ask *Which areas are high
+   risk?*
 
 `python -m satquery.ops seed-demo` adds two DEMO farmer reports and one DEMO heavy-rain alert, so the workflow
 can be shown when the real evidence is quiet; `python -m satquery.ops reset` removes all field-operations records.
@@ -83,7 +84,7 @@ can be shown when the real evidence is quiet; `python -m satquery.ops reset` rem
 | Backend (`satquery/`) | Python, FastAPI, Uvicorn, Pydantic, httpx; serves the API and the built web client on one port |
 | Field operations (`satquery/ops/`, `satquery/store.py`) | Demo accounts with role and jurisdiction checks; reports, review queue, inspections, outcomes; SQLite |
 | Alerts (`satquery/watch/`) | Category-specific alerts derived from the risk engine's evidence, with a publishing gate and deduplication |
-| Geography (`satquery/grid.py`) | H3 hexagonal grid (resolution 8) over the monitored zones |
+| Geography (`satquery/grid.py`, `satquery/agmap/`) | H3 resolution 8 locates reports and tasks; resolution-7 display cells statewide with WorldCover land cover, the SAMPLE crop mix and OpenStreetMap district outlines (`/api/map/*`) |
 | Crop Atlas (`satquery/atlas/`) | Source-tagged crop profiles as data |
 | Risk engine (`satquery/agri/`) | Rule-based scoring; weights, rules and zones are data files in `satquery/agri/assets/` |
 | Language (`satquery/agent/`) | Rule-based intent routing, Latin Manipuri lexicon, Meitei Mayek transliteration |
@@ -240,8 +241,13 @@ without stopping the rest.
   uses generated reports labelled "SAMPLE DATA — Prototype Simulation". Farmer reports from the app are not yet fed
   into the score.
 - **Demonstration zones and grid.** The seven monitored zones are hand-drawn rectangles, not administrative
-  boundaries. H3 cells index locations; they carry no per-cell measurement yet, and no cropland mask is applied.
-  A report's district is the one the reporter chose.
+  boundaries. Risk is scored per zone; a map cell shows its zone's level and is not scored on its own, and cells
+  outside every zone are *not monitored* (not "no risk"). A report's district is the one the reporter chose.
+- **Crop types on the map are SAMPLE.** Where farmland is comes from ESA WorldCover 2021; which crops it holds is
+  a synthetic, illustrative pattern, labelled SAMPLE everywhere, until district crop statistics or a crop-type map
+  are added. WorldCover under-counts hill shifting cultivation (jhum), which it often classes as shrub or grass.
+- **District outlines are OpenStreetMap reference outlines** (simplified about 30 m), not verified legal
+  boundaries. Verified outlines replace them when configured (`SATQUERY_AGRI_DISTRICTS`).
 - **NDVI measures vegetation vigour**, not disease, over all clear land in a zone. Weather is model data for one
   point per zone. Cloud often hides the valley in the monsoon, and then the NDVI factor is unavailable.
 - **Crop Atlas is DRAFT.** Not reviewed by an agronomist, KVK or the Department of Agriculture; regional details
@@ -266,8 +272,12 @@ without stopping the rest.
 - Hexagonal grid: [H3](https://h3geo.org) (Apache 2.0).
 - Place and district names: OpenStreetMap contributors (ODbL); district names follow India's Local Government
   Directory.
-- District boundaries (optional, not included): Survey of India. See
+- District outlines shipped with the map: © OpenStreetMap contributors, ODbL 1.0
+  (`satquery/agri/assets/manipur_districts_osm.geojson`). Survey of India outlines stay optional and local only. See
+  [docs/geo/map-data-sources.md](docs/geo/map-data-sources.md) and
   [docs/geo/district-boundaries-sources.md](docs/geo/district-boundaries-sources.md).
+- Land cover: ESA WorldCover 10 m 2021 v200, CC BY 4.0, © ESA WorldCover project 2021 / Contains modified
+  Copernicus Sentinel data (2021) processed by ESA WorldCover consortium (`satquery/agmap/assets/landcover_r7.json`).
 - Demo imagery in `demo/examples/` and the test split in `experiments/adaptation/test_split/`: BigEarthNet v2.0 /
   BigEarthNet.txt (CDLA-Permissive-1.0) and modified Copernicus Sentinel data; see the READMEs there.
 - Model: `mehmetbayik/Falcon-Single-Instruction-Large` on Hugging Face, downloaded at run time under its own

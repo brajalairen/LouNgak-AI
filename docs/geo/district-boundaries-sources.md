@@ -1,10 +1,15 @@
 # Sources for the Manipur district boundaries
 
+> **What the map shows by default:** OpenStreetMap reference outlines, shipped in the repository
+> (`satquery/agri/assets/manipur_districts_osm.geojson`, ODbL; see [map-data-sources.md](map-data-sources.md)).
+> The Survey of India file described below replaces them on a machine that has it and sets
+> `SATQUERY_AGRI_DISTRICTS`.
+
 ## Status: local only, not in this repository
 
 The district file `data/geo/manipur_districts.geojson` is derived from Survey of India data. Survey of India requires written permission to reproduce its material (see [Terms](#terms-and-attribution)), and that permission has not been received. The file therefore lives only under `data/`, which `.gitignore` excludes. It must not be committed, pushed, attached or shared until permission is granted.
 
-To show the outlines on a machine that has the file, set `SATQUERY_AGRI_DISTRICTS` to its full path before starting the server. Without it, the dashboard shows no outlines and says so.
+To show the outlines on a machine that has the file, set `SATQUERY_AGRI_DISTRICTS` to its full path before starting the server. Without it, the map shows the OpenStreetMap reference outlines and labels them as such.
 
 The outlines are map context only. LouNgak AI scores monitoring zones, never districts.
 

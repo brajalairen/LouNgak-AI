@@ -21,16 +21,19 @@ Cause, VBYLD 2027) that must stay honest about what is real, placeholder or demo
 | `satquery/watch/` | LouNgak Watch: `alerts.py` derives alerts from the assessment; rules in `assets/alert_rules.json` |
 | `satquery/ops/` | Field operations: `models.py` (wire models), `users.py` (demo accounts, permission helpers), `service.py` (workflow rules), `routes.py` (`/api/ops/*`, `/api/watch/*`), `seed.py` + `__main__.py` (DEMO data CLI) |
 | `satquery/store.py` | SQLite document store (`data/loungak.sqlite3`, gitignored) |
-| `satquery/grid.py` | H3 grid (resolution 8), `/api/grid/zones` |
+| `satquery/grid.py` | H3 resolution 8: the cell every report and task is located by |
+| `satquery/agmap/` | Agricultural map, `/api/map/*`: H3 resolution-7 display cells statewide with WorldCover land cover (`assets/landcover_r7.json`), the SAMPLE crop mix (`assets/crop_pattern_sample.json`), zone ids and district outlines; one cell's records filtered by account |
+| `scripts/build_map_assets.py` | Offline build of the OSM district outlines and the WorldCover cell asset (see `docs/geo/map-data-sources.md`) |
 | `satquery/atlas/` | Crop Atlas data (`assets/crops.json`) and `/api/atlas/crops` |
 | `satquery/agent/`, `specialists/`, `providers/` | Imagery question answering, Copernicus retrieval, Open-Meteo forecast, Falcon VLM |
 | `web/src/shell/` | `useSession` (demo account, current page), `AppShell` (top bar) |
 | `web/src/pages/` | One file per page; `pages.test.ts` smoke-renders them from `fixtures.json` |
 | `web/src/ops/` | Shared field-ops UI (`ui.tsx` chips, labels, `useLoad`), `TaskDialog` |
-| `web/src/map/`, `agri/`, `sidebar/`, `command/`, `results/` | The map page and its overlays (risk layer, H3, ops pins, drawer, question bar) |
+| `web/src/agmap/` | The agricultural map: cell layers (`AgLayers`), markers (`PinsLayer`), layers panel with legends, search and filters (`MapToolbar`), cell summary and detail panel, `useMapStore` |
+| `web/src/map/`, `agri/`, `sidebar/`, `command/`, `results/` | The map itself, zone outlines and ranks (`RiskLayer`), the priority sidebar, the risk drawer, the question bar and imagery results |
 | `web/src/state/` | `api.ts` (typed client, sends `X-Demo-User`), `types.ts` (mirrors the Python wire models) |
 | `tests/` | pytest; `test_ops.py` covers alerts, grid, atlas and the field-ops loop; `test_contract.py` checks Python ↔ TS types |
-| `docs/` | Architecture, pest data-source assessment, district boundary sources |
+| `docs/` | Architecture, pest data-source assessment, map data sources (OSM, WorldCover, SAMPLE crops), district boundary sources |
 | `experiments/adaptation/`, `adapters/` | LoRA training and evaluation for the VLM |
 | `Context/` | These planning documents |
 
@@ -59,9 +62,16 @@ provider. For frontend work, `npm run dev` in `web/` (port 5173, proxies `/api` 
    official warning.
 2. **Never invent** agronomic numbers, crop calendars, pest prevalence, field observations, beneficiaries or
    impact figures. If a source is missing, write *source needed*.
-3. **Label everything** that is not real and verified: `SAMPLE` (synthetic pest reports in the risk score),
-   `PLACEHOLDER` (unverified thresholds), `UNVALIDATED` (rules built on placeholders), `DEMO` (seeded workflow
-   records), `DRAFT` (Crop Atlas).
+3. **Label everything** that is not real and verified:
+   - `SAMPLE`: synthetic pest reports in the risk score, and the crop types and shares on the map;
+   - `PLACEHOLDER`: unverified thresholds;
+   - `UNVALIDATED`: rules built on placeholders;
+   - `DEMO`: seeded workflow records;
+   - `DRAFT`: the Crop Atlas;
+   - `REFERENCE`: the OpenStreetMap district outlines (not verified boundaries).
+
+   Real, cited inputs are `SOURCED` (for example ESA WorldCover cropland and the IMD rainfall terms). Presentation
+   mode hides these labels in the UI by default; they stay in the API, the map's data-sources note and the docs.
 4. **Keep the dimensions separate:** category, priority, evidence status, rule status and record status are
    different fields. Do not merge them into one score or colour.
 5. Missing ≠ zero; stale ≠ current; an anomaly ≠ a diagnosis; farmer-reported ≠ verified; officer-observed ≠
@@ -80,7 +90,20 @@ provider. For frontend work, `npm run dev` in `web/` (port 5173, proxies `/api` 
 - **Settings** come from environment variables with the `SATQUERY_` prefix (`satquery/settings.py`).
 - **Permissions** live in `OpsService` using `covers(user, district)` and roles; routes only resolve the demo user.
 - **Map layers** must re-add their sources when `styleReady` turns true (a basemap switch drops runtime sources).
-  Follow `web/src/agri/RiskLayer.tsx` or `web/src/map/H3Layer.tsx`.
+  Follow `web/src/agri/RiskLayer.tsx` or `web/src/agmap/AgLayers.tsx`. Icons are drawn on a canvas and added with
+  `map.addImage` (`agmap/PinsLayer.tsx`), and labels are DOM markers, so no layer needs a sprite or map fonts.
+- **Presentation mode** (`web/src/ui/presentation.ts`, on by default, `SHOW_LABELS` is false): DEMO/SAMPLE badges and
+  the server's demo wording are hidden or reworded for display only; the data and status fields are unchanged. When
+  you add a DEMO/SAMPLE label, render it only when `SHOW_LABELS` is true, and add any new server phrase to the
+  patterns there. The switch is "Show data labels" in the map's layers panel. Keep the disclosure in the data
+  sources note, the README and the docs.
+- **Error boundary:** `App.tsx` wraps each page in `ui/ErrorBoundary.tsx`, so a page error shows a notice rather than
+  a blank app. When a page closes, React runs `MapView`'s cleanup (which removes the map) before its children's:
+  child cleanups may only call `map.off` and `marker.remove()`, never `removeControl` or `removeLayer`. Add map
+  controls in `MapView`.
+- **Map data statuses:** the crop types on the map are SAMPLE (synthetic); cropland is SOURCED (ESA WorldCover);
+  district outlines are REFERENCE (OpenStreetMap) unless verified ones are configured. A map cell carries its
+  zone's id, never a risk level or score of its own.
 - **`useLoad(fn)`** needs a stable function (`api.*` or `useCallback`), or it reloads on every render.
 - **Style:** match the surrounding code. Module docstrings explain *why*; comments are sparse and specific. TS is
   strict with `noUncheckedIndexedAccess` (index results may be `undefined`). Tailwind tokens: `surface`, `sunken`,
@@ -106,6 +129,9 @@ provider. For frontend work, `npm run dev` in `web/` (port 5173, proxies `/api` 
 - **Commits:** small and reviewable, conventional prefixes (`feat:`, `fix:`, `chore:`, `docs:`). Run the tests
   before committing.
 - **Pushing** publishes to the public GitHub repo, so push only when the team lead asks.
+- **Keep the Context docs current, especially before a push.** They are published with the repo. Follow the push
+  checklist in [progress.md](progress.md#push-checklist-the-context-docs-go-public-with-the-repo): update the docs,
+  run the tests, scan for secrets and personal data, and push only when the team lead asks.
 - **At the end of every work session:** update [progress.md](progress.md) (done / next / blockers, plus a line
   in the session log) and record any decision in the decisions table, here or in refined_foundation.md §10.
 - **When unsure** whether something is real data or a placeholder, treat it as a placeholder and label it.

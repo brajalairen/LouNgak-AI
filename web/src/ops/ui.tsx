@@ -7,6 +7,7 @@ import { ApiError } from "../state/api";
 import type { Priority } from "../state/types";
 import { cx } from "../ui/primitives";
 import { useSession } from "../shell/useSession";
+import { SHOW_LABELS } from "../ui/presentation";
 
 export const PRIORITY_LABEL: Record<Priority, string> = { low: "Low", moderate: "Moderate", high: "High", urgent: "Urgent" };
 const PRIORITY_TONE: Record<Priority, string> = {
@@ -98,6 +99,7 @@ export function EvidenceChip({ status }: { status: string }) {
 }
 
 export function DemoChip() {
+  if (!SHOW_LABELS) return null;
   return (
     <Chip className="border-warn/60 bg-warn/10 text-warn" title="Demonstration record, not real data">
       <FlaskConical className="h-3 w-3" strokeWidth={2} aria-hidden="true" />

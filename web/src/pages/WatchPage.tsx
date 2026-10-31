@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { api } from "../state/api";
+import { SHOW_LABELS } from "../ui/presentation";
 import type { Alert, AlertCategory } from "../state/types";
 import { Button, cx } from "../ui/primitives";
 import { useSession } from "../shell/useSession";
@@ -113,9 +114,11 @@ function AlertCard({ alert, officer, near }: { alert: Alert; officer: boolean; n
       <div className="flex flex-wrap items-center gap-1.5">
         <PriorityChip priority={alert.priority} />
         <EvidenceChip status={alert.evidence_status} />
-        <Chip className={RULE_TONE[alert.rule_status]} title="How far the rule behind this alert is validated">
-          Rule {alert.rule_status.toLowerCase()}
-        </Chip>
+        {(SHOW_LABELS || alert.rule_status !== "DEMO") && (
+          <Chip className={RULE_TONE[alert.rule_status]} title="How far the rule behind this alert is validated">
+            Rule {alert.rule_status.toLowerCase()}
+          </Chip>
+        )}
         {alert.gate === "qualified_watch" && <Chip title="Published with its limitations stated">Qualified watch</Chip>}
         {alert.is_demo && <DemoChip />}
         {near && <Chip className="border-accent/50 text-accent">Your district</Chip>}

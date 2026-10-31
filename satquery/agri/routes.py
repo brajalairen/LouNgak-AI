@@ -159,7 +159,7 @@ def overview(snapshot: Snapshot) -> AgriOverview:
     if official:
         notes.append(f"{len(official)} district(s) with administrative outlines from a named dataset.")
     elif not boundaries:  # when outlines are loaded, district_note says so; never claim both
-        notes.append("Verified district boundaries are not loaded yet.")
+        notes.append("Verified district boundaries are not loaded yet; the map shows OpenStreetMap reference outlines.")
     bounds = [s.bounds for s in summaries]
     view = (min(b[0] for b in bounds), min(b[1] for b in bounds), max(b[2] for b in bounds),
             max(b[3] for b in bounds)) if bounds else None
@@ -169,7 +169,8 @@ def overview(snapshot: Snapshot) -> AgriOverview:
     names = agri_districts.load_names()
     district_note = (
         f"District names: {names['source']}, retrieved {names['retrieved_on']} (to be confirmed). "
-        + ("District outlines: verified boundaries loaded. " if boundaries else "District outlines are not loaded yet. ")
+        + ("District outlines: verified boundaries loaded. " if boundaries
+           else "Verified district outlines are not loaded yet; the map draws OpenStreetMap reference outlines. ")
         + "Each zone's district comes from its own properties. A district's level is that of its highest-priority "
           "monitored zone; it does not mean the whole district is affected.")
     return AgriOverview(

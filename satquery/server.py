@@ -21,6 +21,7 @@ from typing import Literal
 import numpy as np
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, model_validator
@@ -521,7 +522,7 @@ def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = ana
     from satquery.agri.routes import agri_router
     from satquery.agri.service import AssessmentService
     from satquery.atlas import atlas_router
-    from satquery.grid import grid_router
+    from satquery.agmap import agmap_router
     from satquery.ops.routes import ops_router
     from satquery.ops.service import OpsService
     from satquery.store import Store
@@ -543,6 +544,8 @@ def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = ana
 
     app = FastAPI(title="LouNgak AI", description="Crop & pest risk monitoring and remote-sensing analysis", lifespan=lifespan)
     app.add_middleware(CORSMiddleware, allow_origins=DEV_ORIGINS, allow_methods=["*"], allow_headers=["*"])
+    # The map's statewide cell layer is about 1 MB of GeoJSON; compressed it is a fraction of that.
+    app.add_middleware(GZipMiddleware, minimum_size=4096)
 
     @app.middleware("http")
     async def refuse_oversized_uploads(request: Request, call_next):
@@ -1038,7 +1041,7 @@ def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = ana
     # Before the static mount, which would otherwise shadow them.
     app.include_router(agri_router(agri))
     app.include_router(ops_router(ops))
-    app.include_router(grid_router(agri.areas))
+    app.include_router(agmap_router(agri, ops))
     app.include_router(atlas_router())
 
     if WEB_DIST.is_dir():  # production: one origin serves the API and the built client

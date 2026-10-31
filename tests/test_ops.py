@@ -75,13 +75,9 @@ def test_conducive_weather_is_only_a_qualified_unvalidated_watch():
 
 # ------------------------------------------------------------------------------- grid and atlas
 
-def test_zone_cells_are_resolution_8_and_located_in_their_zone():
-    zones = grid.zone_cells(demo_areas())
-    assert zones.resolution == 8 and zones.cell_count == len(zones.cells["features"]) > 100
-    feature = zones.cells["features"][0]
-    assert h3.get_resolution(feature["properties"]["cell"]) == 8
-    ring = feature["geometry"]["coordinates"][0]
-    assert ring[0] == ring[-1] and len(ring) == 7
+def test_records_are_located_by_resolution_8_cells_and_their_zone():
+    cell = grid.cell_for(BISHNUPUR_POINT["latitude"], BISHNUPUR_POINT["longitude"])
+    assert h3.get_resolution(cell) == 8
     zone = grid.zone_for(BISHNUPUR_POINT["latitude"], BISHNUPUR_POINT["longitude"], demo_areas())
     assert zone is not None and zone.id == "demo-bishnupur-nambol"
     assert grid.zone_for(25.5, 94.5, demo_areas()) is None
@@ -200,6 +196,5 @@ def test_the_situation_view_counts_records_per_zone_without_private_counts_for_t
     assert [z["zone_id"] for z in officer] == ["demo-bishnupur-nambol"] and officer[0]["reports_open"] == 1
 
 
-def test_the_grid_and_atlas_endpoints(client):
-    assert client.get("/api/grid/zones").json()["resolution"] == 8
+def test_the_atlas_endpoint(client):
     assert len(client.get("/api/atlas/crops").json()["crops"]) == 3

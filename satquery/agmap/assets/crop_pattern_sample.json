@@ -1,0 +1,24 @@
+{
+  "status": "SAMPLE",
+  "note": "SAMPLE crop pattern for the prototype map. Which crops a cell's farmland holds, and their shares, are SYNTHETIC: generated from the illustrative profiles below, not from a crop survey, agricultural census, district statistics or a satellite crop-type map. Where farmland is (the cropland share) is real ESA WorldCover data; the crop types are not.",
+  "replace_with": "District crop statistics (Directorate of Economics & Statistics area by crop) or a validated crop-type map; then crop_mix() reads that instead.",
+  "seed": 20261031,
+  "variation": 2.2,
+  "mixed_below": 0.35,
+  "min_share": 0.03,
+  "crops": [
+    {"id": "rice", "label": "Rice", "examples": "Paddy"},
+    {"id": "maize", "label": "Maize", "examples": "Maize cultivation"},
+    {"id": "potato", "label": "Potato", "examples": "Potato cultivation"},
+    {"id": "tomato", "label": "Tomato", "examples": "Tomato and other horticulture"},
+    {"id": "vegetables", "label": "Vegetables (other)", "examples": "Other vegetables"},
+    {"id": "chakhao", "label": "Chak-hao", "examples": "Chak-hao (black rice)"},
+    {"id": "other", "label": "Other crops", "examples": "Millets, pulses, oilseeds"},
+    {"id": "mixed", "label": "Mixed / multiple", "examples": "No crop above 35% of the farmland"}
+  ],
+  "profiles": {
+    "valley": {"rice": 0.62, "chakhao": 0.1, "vegetables": 0.1, "potato": 0.05, "tomato": 0.05, "maize": 0.04, "other": 0.04},
+    "hill": {"rice": 0.3, "maize": 0.24, "vegetables": 0.12, "potato": 0.1, "tomato": 0.06, "chakhao": 0.03, "other": 0.15}
+  },
+  "valley_districts": ["Bishnupur", "Imphal East", "Imphal West", "Jiribam", "Kakching", "Thoubal"]
+}

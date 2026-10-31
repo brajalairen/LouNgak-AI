@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from satquery import atlas, grid, schemas, server
+from satquery import agmap, atlas, schemas, server
 from satquery.agri import models as agri_models, routes as agri_routes
 from satquery.ops import models as ops_models
 from satquery.watch import alerts
@@ -52,7 +52,7 @@ MIRRORED = {
     "AgriAreaDetail": agri_routes.AgriAreaDetail,
     "AgriQueryResult": agri_routes.AgriQueryResult,
     "DistrictSummary": agri_routes.DistrictSummary,
-    # Field operations, LouNgak Watch, grid and Crop Atlas
+    # Field operations, LouNgak Watch, agricultural map and Crop Atlas
     "DemoUser": ops_models.DemoUser,
     "OpsPeople": ops_models.OpsPeople,
     "StatusChange": ops_models.StatusChange,
@@ -67,7 +67,13 @@ MIRRORED = {
     "ZoneSituation": ops_models.ZoneSituation,
     "Alert": alerts.Alert,
     "WatchOverview": alerts.WatchOverview,
-    "GridZones": grid.GridZones,
+    "LayerSource": agmap.LayerSource,
+    "CropLegendEntry": agmap.CropLegendEntry,
+    "DistrictEntry": agmap.DistrictEntry,
+    "AgMap": agmap.AgMap,
+    "CropShare": agmap.CropShare,
+    "LandCoverShare": agmap.LandCoverShare,
+    "CellDetail": agmap.CellDetail,
     "AtlasSource": atlas.AtlasSource,
     "LocalName": atlas.LocalName,
     "CropSection": atlas.CropSection,

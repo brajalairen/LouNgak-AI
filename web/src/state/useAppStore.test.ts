@@ -879,8 +879,8 @@ describe("crop & pest risk questions", () => {
     expect(analyze).toHaveBeenCalledTimes(1);
   });
 
-  it("the dashboard opens on the priority list, and names the risk-engine step", () => {
-    expect(useAppStore.getInitialState()).toMatchObject({ sidebarOpen: true, section: "priority" });
+  it("the map opens with the sidebar collapsed to its rail, and names the risk-engine step", () => {
+    expect(useAppStore.getInitialState()).toMatchObject({ sidebarOpen: false, section: null });
     expect(PROGRESS_LABELS.assessing).toBe("Consulting the crop & pest risk engine");
   });
 });

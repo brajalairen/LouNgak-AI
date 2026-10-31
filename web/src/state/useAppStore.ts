@@ -19,7 +19,7 @@ import { useAgriStore } from "../agri/useAgriStore";
 /** Area-enclosing shapes only: a point cannot restrict an analysis. */
 export type DrawMode = "rectangle" | "polygon" | "circle" | null;
 /** "priority": the early-warning list, open by default. */
-export type SidebarSection = "priority" | "search" | "select" | "layers" | "saved" | "help" | null;
+export type SidebarSection = "priority" | "select" | "layers" | "saved" | "help" | null;
 
 /** A loaded raster plus its display state. `mappable` decides map layer vs off-map viewer. */
 export interface Layer extends UploadInfo {
@@ -364,9 +364,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   error: null,
   hiddenOverlays: new Set(),
 
-  // The risk dashboard opens on its priority list.
-  sidebarOpen: true,
-  section: "priority",
+  // The map opens with the sidebar collapsed to its rail; the priority list is one click away.
+  sidebarOpen: false,
+  section: null,
   pendingQuery: null,
   detailsOpen: false,
   theme: readTheme(),

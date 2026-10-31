@@ -834,13 +834,95 @@ export interface WatchOverview {
   notes: string[];
 }
 
-export interface GridZones {
+/* ------------------------------------------------------------------ agricultural map
+ * Mirrors satquery/agmap. Land cover is SOURCED (ESA WorldCover), crop types are SAMPLE, and risk stays
+ * the monitored zone's: a cell carries its zone id, never a level or score of its own. */
+
+export type SourceStatus = "SOURCED" | "SAMPLE" | "VERIFIED" | "REFERENCE";
+
+export interface LayerSource {
+  name: string;
+  status: SourceStatus;
+  licence: string | null;
+  attribution: string;
+  note: string;
+  limitations: string[];
+}
+
+export interface CropLegendEntry {
+  id: string;
+  label: string;
+  examples: string;
+}
+
+export interface DistrictEntry {
+  name: string;
+  bounds: [number, number, number, number];
+  label_point: [number, number];
+  cell_count: number;
+  farmland_cell_count: number;
+}
+
+/** Cell properties: cell, district, cropland (0-1 or null), dominant (crop id or null), zone (id or
+ *  null), and p_<crop> for each crop's SAMPLE share of the cell's farmland. */
+export interface MapCellProperties {
+  cell: string;
+  district: string | null;
+  cropland: number | null;
+  dominant: string | null;
+  zone: string | null;
+  [share: `p_${string}`]: number | undefined;
+}
+
+export interface AgMap {
   resolution: number;
   mean_cell_area_km2: number;
   cell_count: number;
-  note: string;
-  /** Properties: cell, zone_id, zone_name, district. */
-  cells: GeoJSON.FeatureCollection<GeoJSON.Polygon>;
+  farmland_cell_count: number;
+  min_cropland: number;
+  cells: GeoJSON.FeatureCollection<GeoJSON.Polygon, MapCellProperties>;
+  districts: GeoJSON.FeatureCollection<GeoJSON.Polygon | GeoJSON.MultiPolygon, { name: string }>;
+  district_list: DistrictEntry[];
+  crop_legend: CropLegendEntry[];
+  landcover: LayerSource;
+  crops: LayerSource;
+  boundaries: LayerSource;
+  notes: string[];
+}
+
+export interface CropShare {
+  crop: string;
+  share: number;
+}
+
+export interface LandCoverShare {
+  cover: string;
+  label: string;
+  share: number;
+}
+
+export interface CellDetail {
+  cell: string;
+  resolution: number;
+  center: [number, number];
+  boundary: GeoJSON.Polygon;
+  area_km2: number;
+  district: string | null;
+  landcover: LandCoverShare[];
+  cropland: number | null;
+  is_farmland: boolean;
+  /** SAMPLE: synthetic crop shares; empty when the cell is not farmland. */
+  crop_mix: CropShare[];
+  dominant: string | null;
+  zone: AreaSummary | null;
+  zone_note: string;
+  alerts: Alert[];
+  reports: FarmerReport[];
+  tasks: InspectionTask[];
+  /** False when this account may not list these records at all ("not visible", not "none"). */
+  reports_visible: boolean;
+  tasks_visible: boolean;
+  notes: string[];
 }
 
 export type SectionStatus = "SOURCED" | "TO_VERIFY" | "SOURCE_NEEDED";

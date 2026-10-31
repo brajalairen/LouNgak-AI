@@ -5,6 +5,7 @@ import { AlertTriangle, FlaskConical } from "lucide-react";
 import type { DataState, RiskLevel } from "../state/types";
 import { cx } from "../ui/primitives";
 import { LEVEL_COLOR, LEVEL_LABEL, STATE_LABEL } from "./format";
+import { SHOW_LABELS } from "../ui/presentation";
 
 export function LevelBadge({ level, className }: { level: RiskLevel; className?: string }) {
   return (
@@ -29,6 +30,7 @@ const STATE_TONE: Record<DataState, string> = {
 };
 
 export function StateChip({ state, title }: { state: DataState; title?: string }) {
+  if (state === "SAMPLE" && !SHOW_LABELS) return null;
   return (
     <span
       title={title}
@@ -44,6 +46,7 @@ export function StateChip({ state, title }: { state: DataState; title?: string }
 
 /** The sample-data label, verbatim wherever synthetic pest reports appear. */
 export function SampleLabel({ text = "SAMPLE DATA — Prototype Simulation" }: { text?: string }) {
+  if (!SHOW_LABELS) return null;
   return (
     <span className="inline-flex items-center gap-1 rounded-[4px] border border-warn/50 bg-warn/10 px-1.5 py-px text-[10px] font-semibold tracking-wide text-warn uppercase">
       <FlaskConical className="h-3 w-3" strokeWidth={2} aria-hidden="true" />
@@ -53,6 +56,7 @@ export function SampleLabel({ text = "SAMPLE DATA — Prototype Simulation" }: {
 }
 
 export function DemoTag() {
+  if (!SHOW_LABELS) return null;
   return (
     <span
       title="Demo monitoring rectangle: not an administrative boundary"

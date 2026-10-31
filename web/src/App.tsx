@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { api } from "./state/api";
 import { applyTheme, useAppStore } from "./state/useAppStore";
 import { ToastHost } from "./ui/primitives";
+import { ErrorBoundary } from "./ui/ErrorBoundary";
 import { useAgriStore } from "./agri/useAgriStore";
 import { TopBar } from "./shell/AppShell";
 import { useSession, type Page } from "./shell/useSession";
@@ -58,7 +59,10 @@ export default function App() {
       <div className="flex h-full w-full flex-col">
         <TopBar />
         <main className="relative min-h-0 flex-1 overflow-hidden">
-          <Current />
+          {/* An error in a page shows a notice there, never a blank app; it clears on the next page. */}
+          <ErrorBoundary resetKey={page}>
+            <Current />
+          </ErrorBoundary>
         </main>
       </div>
     </ToastHost>

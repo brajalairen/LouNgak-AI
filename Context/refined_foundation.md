@@ -84,17 +84,18 @@ question-answering engine. The table shows the state **after** Sprint 0 (branch 
 | Implemented & tested | English/Manipuri question routing; Meitei Mayek → Latin transliteration; 24 reviewed Manipuri answer templates (lexicon still DRAFT) | `satquery/agent/language.py`, `satquery/agri/answer_language.py` |
 | **Implemented in Sprint 0** | LouNgak Watch: heavy-rain (IMD categories), crop-health (NDVI) and pest/disease-watch alerts derived from the assessment; separate priority / evidence / rule status / gate; stable ids (dedupe); acknowledgements | `satquery/watch/` |
 | Implemented in Sprint 0 | Field operations: demo accounts with server-side role and jurisdiction checks; farmer reports (unverified) → review queue with reasons → inspection tasks → assigned field officer → 5 verification outcomes → farmer-visible status; DEMO seed | `satquery/ops/`, `satquery/store.py` |
-| Implemented in Sprint 0 | H3 grid, resolution 8, over the monitored zones; every report and task carries its cell | `satquery/grid.py`, `web/src/map/H3Layer.tsx` |
+| Implemented in Sprint 0 | H3 resolution 8: every report and task carries its cell | `satquery/grid.py` |
+| **Implemented after Sprint 0** | Agricultural map: statewide H3 resolution-7 cells (3,993); cropland per cell from ESA WorldCover 2021 (SOURCED); crop colours from a SAMPLE pattern; each zone's level on its cells; alerts, reports and inspections as markers; OpenStreetMap district outlines (REFERENCE); layers panel with legends; search and filters; cell summary and detail panel with actions | `satquery/agmap/`, `scripts/build_map_assets.py`, `web/src/agmap/`, [docs/geo/map-data-sources.md](../docs/geo/map-data-sources.md) |
 | Implemented in Sprint 0 | Crop Atlas: DRAFT profiles for rice, Chak-hao and maize, each section tagged SOURCED / TO_VERIFY / SOURCE_NEEDED | `satquery/atlas/` |
 | Implemented in Sprint 0 | Web: top bar with role-aware pages and DEMO account switcher; Situation Monitor (map), Alerts, Field Operations, My inspections, Report an issue, My reports, Crop Atlas | `web/src/shell/`, `web/src/pages/` |
 | **Partial** | Combined situation summary: per-zone counts only (no situation-report document yet) | `/api/ops/situation` |
 | Partial | Water analysis exists on demand for a drawn area, but there are no water/flood alerts | `satquery/specialists/tools.py` |
 | Partial | Archived contracts for inspections and observations (tag `archive/recover-local-ag04-work`): ideas were ported, not the files | git tag |
-| **Not implemented** | Real authentication; official IMD/CWC/NDMA warnings; cropland mask; per-cell analysis; district boundaries in the app; farmer reports feeding the risk score; situation reports; LLM explanation layer; notifications; offline field mode; farm registration | — |
+| **Not implemented** | Real authentication; official IMD/CWC/NDMA warnings; crop-type data (the map's crops are SAMPLE); per-cell risk or NDVI analysis; automatic district routing of reports; verified district boundaries in the repository; farmer reports feeding the risk score; situation reports; LLM explanation layer; notifications; offline field mode; farm registration | — |
 | **Removed in Sprint 0** | Legacy Gradio HF Space (`app.py`, `satquery/ui.py`), imagery CLI (`satquery/cli.py`), SIH-era `presentation-assets/`, dead code (see progress.md) | — |
 
-**Tests:** 832 backend (pytest) and 109 frontend (Vitest), all passing. `tests/test_contract.py` keeps the 58
-Python wire models and their TypeScript mirrors in step.
+**Tests (31 Oct 2026, after the agricultural map):** 852 backend (pytest; 3 skipped) and 126 frontend (Vitest), all
+passing. `tests/test_contract.py` keeps the 64 Python wire models and their TypeScript mirrors in step.
 
 ---
 
@@ -136,10 +137,12 @@ Python wire models and their TypeScript mirrors in step.
 
 1. **Situation report** (printable HTML, then PDF via the browser) for a zone, district or drawn area, reusing
    the imagery report pattern (`satquery/evidence.py`).
-2. **Per-cell NDVI and the cropland mask** (see 4.2).
+2. **Per-cell NDVI and the cropland mask** (see 4.2). *The WorldCover cropland share per resolution-7 cell is built
+   and drawn on the map; using it to mask the NDVI factor, and per-cell NDVI, are still to do.*
 3. **Optional LLM explanation layer** for alerts and situation summaries; Manipuri output only from reviewed
    templates or with fluent-speaker review.
-4. **District boundaries from OSM** and automatic district routing of reports.
+4. **District boundaries from OSM** and automatic district routing of reports. *The OSM outlines ship and draw on
+   the map; routing a report to the district containing its pin is still to do.*
 5. **Farmer reports and verified outcomes feeding the risk engine**, replacing the SAMPLE report factor (the
    seam is `Sources.reports.for_area()` in `satquery/agri/pipeline.py`).
 6. **Water/flood alerts** from Sentinel-1 water extent for monitored zones.
@@ -170,16 +173,20 @@ web/ (React, MapLibre, Zustand)                     satquery/ (FastAPI, one port
  shell/  top bar, demo account, pages     ──HTTP──▶  agri/    risk engine, /api/agri/*   (weather, NDVI, SAMPLE reports)
  pages/  Monitor, Alerts, Field Ops,                 watch/   alerts derived from the assessment  /api/watch/*
          My inspections, Report, My reports,         ops/     reports, queue, tasks, outcomes      /api/ops/*
-         Crop Atlas                                  grid.py  H3 cells                             /api/grid/*
- map/    MapView, RiskLayer, H3Layer, OpsLayer       atlas/   crop profiles                        /api/atlas/*
- agri/, results/, sidebar/, command/                 agent/, specialists/, providers/   imagery Q&A, /api/analyze …
-                                                     store.py SQLite (data/loungak.sqlite3, gitignored)
+         Crop Atlas                                  agmap/   H3 res-7 map cells, WorldCover,      /api/map/*
+ agmap/  AgLayers, PinsLayer, LayerPanel,                     SAMPLE crop mix, district outlines
+         MapToolbar, CellSummary, CellPanel          grid.py  H3 res-8 cell of each record
+ map/    MapView (map, scale bar), AoiLayer          atlas/   crop profiles                        /api/atlas/*
+ agri/   RiskLayer (zone outlines, ranks),           agent/, specialists/, providers/   imagery Q&A, /api/analyze …
+         PriorityPanel, AreaRiskDrawer               store.py SQLite (data/loungak.sqlite3, gitignored)
+ ui/     ErrorBoundary, presentation mode
+ results/, sidebar/, command/                        scripts/build_map_assets.py: offline build of the map assets
 ```
 
 **Key endpoints:** `GET /api/watch/alerts` (public), `POST /api/watch/alerts/{id}/ack`, `POST|GET /api/ops/reports`,
 `POST /api/ops/reports/{id}/review`, `GET /api/ops/queue`, `POST|GET /api/ops/tasks`,
 `POST /api/ops/tasks/{id}/assign|start|outcome`, `GET /api/ops/situation`, `GET /api/ops/users`,
-`GET /api/grid/zones`, `GET /api/atlas/crops`, plus the existing `/api/agri/*`, `/api/route`, `/api/weather`,
+`GET /api/map/layers`, `GET /api/map/cells/{cell}`, `GET /api/atlas/crops`, plus the existing `/api/agri/*`, `/api/route`, `/api/weather`,
 `/api/analyze`, `/api/fetch-imagery`, `/api/uploads`.
 
 **Demo accounts** (`satquery/ops/users.py`): two farmers (Bishnupur, Thoubal), two field officers (Bishnupur;
@@ -263,7 +270,11 @@ As in foundation_v1 §16, phases 2–4. Nothing there is claimed until built and
 Before recording: `python -m satquery.ops reset`, then `python -m satquery.ops seed-demo`, start the server, and
 open each page once so the assessment is warm.
 
-**Deck (7 slides):** 1 LouNgak AI: from geospatial observation to early warning and action · 2 The problem in
+> **Update (31 Oct):** the portal's template is the HSC one (cover, problem and solution, technical approach, impact,
+> feasibility and risk, team, references). The deck was built on it: `HFSS/LouNgak_AI_HSC_Presentation.pptx`, with
+> placeholders left for the team ID, demo video link and member names. See progress.md.
+
+**Deck (7 slides, the earlier outline):** 1 LouNgak AI: from geospatial observation to early warning and action · 2 The problem in
 Manipur · 3 The solution: the loop and the two dashboards · 4 Technology: Sentinel-1/2, Open-Meteo, H3, rules +
 AI, field feedback · 5 The working prototype (screenshots, DEMO labels visible) · 6 Social impact and SDGs 2/13
 (15/11 supporting) with measurable indicators (foundation_v1 §17) · 7 Pilot plan, milestones, path to other states.
@@ -282,6 +293,12 @@ AI, field feedback · 5 The working prototype (screenshots, DEMO labels visible)
 | D8 | 31 Oct | IMD rainfall categories for heavy-rain alerts | Engineering decision; confirm against IMD glossary |
 | D9 | 31 Oct | Simplified alert and task lifecycles; 5 outcomes kept | Engineering decision |
 | D10 | 31 Oct | Real credentials only in `.env` (gitignored), never in `.env.example` | Rule |
+| D11 | 31 Oct | Map display grid: H3 resolution 7 statewide; resolution 8 stays the record and analysis cell | Engineering decision |
+| D12 | 31 Oct | Crop colours on the map come from a labelled SAMPLE pattern until crop-type data exists; cropland from ESA WorldCover | Engineering decision, following the user's map brief; replace when a source is found |
+| D13 | 31 Oct | OpenStreetMap district outlines (ODbL) ship as reference outlines; verified outlines take precedence when configured | Engineering decision (implements §4.2) |
+| D14 | 31 Oct | Map cells show their zone's level only (outline over crops, fill without); cells outside zones are "not monitored" | Engineering decision |
+| D15 | 31 Oct | Presentation mode on by default: DEMO/SAMPLE labels hidden for the finished-product look; the data sources note, README and docs keep the disclosure; one switch restores labels | User (the professor's advice); implemented by Claude |
+| D16 | 31 Oct | The submission deck does not mention SIH or SatQuery AI and tells the project's own journey | User |
 
 ## 11. Open questions
 
@@ -290,7 +307,8 @@ AI, field feedback · 5 The working prototype (screenshots, DEMO labels visible)
 | Can an agronomist, KVK or CAU Imphal review `pest_rules.json` and the Crop Atlas? | Team | State demo |
 | Manipur crop calendar and district crop areas: which official source? | Team | Stage 2 |
 | Is the IMD glossary URL for rainfall categories still current? | Engineer | Stage 2 |
-| WorldCover cropland classes over valley paddy: usable or misleading? | Engineer | Before the mask ships |
+| WorldCover cropland classes over valley paddy: usable or misleading? (Valley districts average 48–64% cropland; check against imagery) | Engineer | Before the NDVI mask uses it |
+| Which source can replace the SAMPLE crop pattern (DES area by crop per district, a crop-type map)? | Team | Before the map's crops are presented as real |
 | NDMA SACHET CAP feed: terms, coverage of Manipur, format | Engineer | Stage 2 |
 | Real officer titles and jurisdictions in the Manipur Department of Agriculture | Team | Before any pilot |
 | Copernicus quota on the demo machine (the NDVI factor costs 4 requests per zone per refresh) | Engineer | State demo |

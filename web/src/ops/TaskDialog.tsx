@@ -80,7 +80,7 @@ export function TaskDialog({ target, onClose }: { target: TaskTarget; onClose: (
               ))}
             </select>
           </Field>
-          <Field label="Assign to field officer" hint={officers.length ? undefined : "No demo field officer covers this district; the task is created unassigned."}>
+          <Field label="Assign to field officer" hint={officers.length ? undefined : "No field officer covers this district; the task is created unassigned."}>
             <select className={fieldClass} value={assignee} onChange={(e) => setAssignee(e.target.value)}>
               <option value="">Leave unassigned</option>
               {officers.map((u) => (
