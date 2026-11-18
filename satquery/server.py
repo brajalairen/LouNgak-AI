@@ -528,8 +528,9 @@ def create_app(run_analysis: Callable[[AnalysisRequest], AnalysisResponse] = ana
     from satquery.store import Store
 
     settings = load_settings()
-    agri = agri_service or AssessmentService()
-    ops = OpsService(ops_store or Store(settings.db_path), agri)
+    ops_store = ops_store or Store(settings.db_path)
+    agri = agri_service or AssessmentService(store=ops_store)  # field reports feed the zones' report factor
+    ops = OpsService(ops_store, agri)
     store = UploadStore(directory=_uploads_dir(settings))
     upload_limit = settings.max_upload_mb * 1024 * 1024
     too_large = f"the file is larger than the {settings.max_upload_mb} MB upload limit (SATQUERY_MAX_UPLOAD_MB)"

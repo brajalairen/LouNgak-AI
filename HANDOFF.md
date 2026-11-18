@@ -1,100 +1,47 @@
 # HANDOFF: what to do next
 
-Read `CLAUDE.md` first. The full detail for every task is in `docs/REVIEW-2026-11-17.md`. Section 2 covers the
-problems, and section 5 is the step-by-step plan. Do the tasks in this order, one commit each, with the backend
-tests green before and after.
+Read `CLAUDE.md` first, then `PROGRESS.md`. The detail behind every task is in `docs/REVIEW-2026-11-17.md`: section 2
+covers the problems, and section 5 is the step-by-step plan. The demo is on **22 Nov 2026**.
 
-## Tasks in order
+## Done on 18 Nov 2026 (committed 19 Nov as one commit on `feat/stage2-hardening`)
 
-### Task 1: baseline (review step 0)
+Review steps 0, 1, 2, 3, 5 and 6a are done, with the backend at 883 passed and the frontend at 127 passed. See
+`PROGRESS.md` for what each step changed. The branch is not pushed.
 
-- Run `.venv\Scripts\python -m pytest`.
-- In `web/`, run `npm ci`, `npm test`, `npm run typecheck` and `npm run build`.
-- Record the counts in `PROGRESS.md`.
-- **Acceptance:**
-  - The backend shows 852 passed and 3 skipped, or any difference is explained.
-  - The frontend tests, typecheck and build pass. They have not been run since 31 Oct.
+## Before the demo (22 Nov), on the presenting machine
 
-### Task 2: permission and integrity fixes (review step 1)
+1. `python -m satquery.agri warm --save-snapshot --crop-health`: today's data, plus the offline fallback. This uses
+   Copernicus quota.
+2. `python -m satquery.ops seed-demo`: the DEMO alert is valid for 3 days from this run, so run it on 20 Nov or later.
+3. `python -m satquery.ops preflight`: fix every FAIL.
+4. Start the server and click through the demo once in a browser. This has not been done since 31 Oct.
 
-- In `satquery/ops/service.py` `create_task`, check every report and alert. Each must be in the officer's
-  jurisdiction, open, and not already in another open task.
-- Make `satquery/store.py` `next_id` allocate and insert atomically.
-- Validate `due_on` as a date, and the outcome GPS fields as coordinates.
-- **Acceptance:**
-  - A Bishnupur officer bundling a Thoubal report gets 403.
-  - Re-tasking an INSPECTED report gets 409.
-  - 50 concurrent report submissions produce 50 distinct ids and 50 rows.
-  - All existing tests still pass.
+On this laptop, run each command through the base interpreter (README, "Windows and Smart App Control").
 
-### Task 3: non-blocking risk refresh (review step 2)
+**Live demo moment (new).** As the Bishnupur farmer, report a *pest* inside the Nambol zone. Then open the zone's
+"Why is this area at risk?" panel. Its score rises, and the report factor names the report by id. After the field
+officer records "Concern observed", it rises again. Expect the level to stay LOW in dry November weather: that is
+the honest result, so say so. Waterlogging reports do not count towards pest pressure.
 
-- In `satquery/agri/service.py` `snapshot()`, return the old snapshot at once when it has expired, and recompute in
-  one background thread.
-- Block only when no snapshot exists. Add `invalidate()`.
-- **Acceptance:**
-  - With a source that sleeps 2 s, a call after expiry returns in under 100 ms with the old snapshot.
-  - A later call returns the new one.
-  - Ten concurrent calls trigger only one recompute.
+## Still open, in order of value
 
-### Task 4: alert ids, expiry, demo seed and pre-demo check (review step 3)
-
-- In `satquery/watch/alerts.py`, key alerts by rule, zone and episode start, not by today's date.
-- Filter out expired alerts, including the DEMO alert, in `satquery/ops/service.py`.
-- Make `seed-demo` idempotent (`satquery/ops/seed.py`).
-- Set `SATQUERY_VLM_BACKEND=fake` in `.env.example`.
-- Add `python -m satquery.ops preflight`. It checks:
-  - that `web/dist` exists;
-  - the VLM backend against an importable torch;
-  - Copernicus credentials;
-  - that the snapshot is under 24 h old;
-  - that the database is writable;
-  - the seed state.
-- **Acceptance:**
-  - The same firing rule on two consecutive days gives the same alert id.
-  - Acknowledgements and linked tasks survive the day change.
-  - An expired demo alert is hidden.
-  - Running `seed-demo` twice leaves 2 demo reports and 1 demo alert.
-  - Preflight exits non-zero with `falcon` and no torch.
-
-### Task 5: honest report feed (decision A; review step 5, upgrade 1)
-
-- Feed real farmer reports and inspection outcomes into the risk score's report factor, and switch the SAMPLE
-  generator off by default.
-- Or, if there is no time, show "simulated demo data" on screen in every mode, and remove the presentation-mode
-  rewording in `web/src/ui/presentation.ts`.
-- **Acceptance:**
-  - Real path: one new farmer report raises its zone's report points on the next overview and cites the report
-    id, and `includes_sample_data` is false.
-  - Label path: no screen shows SAMPLE reports without the "simulated demo data" label.
-
-After task 5, continue with review steps 4 and 6 to 9 as time allows. Step 10, the Sentinel-1 rice calendar, waits
-until after the hackathon (decision C).
-
-## Demo-risk problems from the review
-
-These are not fixed yet. They could break or discredit a live demo.
-
-1. **The page freezes on refresh.** Every 30 minutes the risk recompute holds a lock, and all risk, alert, queue
-   and map requests wait (`satquery/agri/service.py:180-185`). Task 3 fixes this.
-2. **The ranking is decided by synthetic data.** Synthetic pest reports with hand-set per-zone pressure largely
-   decide the ranking, and presentation mode presents them as a "report feed". Task 5 fixes this.
-3. **Alerts change identity daily.** Acknowledgements and linked tasks are orphaned overnight. Task 4 fixes this.
-4. **The DEMO alert never expires.** It shows a past "valid until" date if it was seeded weeks ago. Until task 4 is
-   done, run `python -m satquery.ops reset` and then `python -m satquery.ops seed-demo` before demoing.
-5. **`.env.example` selects the real model.** It sets `SATQUERY_VLM_BACKEND=falcon`, but the default install has
-   no torch, so a fresh machine fails on the first image question. Task 4 fixes this. Until then, set `fake` in
-   `.env`.
-6. **Identity is a header** (`X-Demo-User`), and uploads and imagery fetches are unauthenticated and unlimited.
-   Do not expose the server through a public tunnel until review step 9 is done.
+1. **Browser rehearsal** of the whole script (`Context/refined_foundation.md` section 9). Add the field-report moment
+   above to the narration: the script predates it.
+2. **Crop-type SAMPLE wording.** Presentation mode still hides "Crop types and shares are SAMPLE" in the cell panel,
+   though the data-sources note keeps it (D15, the professor's advice). Decision A covers only pest reports. Consider
+   whether the same credibility argument applies before judges ask.
+3. **Review step 4:** derive a report's district from the pin, using the shipped OpenStreetMap outlines.
+4. **Review step 7:** a printable situation report.
+5. **Review step 8:** a confidence label that varies, and pest-watch tuning: currently every zone is "low"
+   confidence while thresholds are PLACEHOLDER.
+6. **Review step 9:** do this before any public tunnel, because identity is still only the `X-Demo-User` header.
+7. **Review step 6b:** a cropland-masked, per-cell NDVI. Measure its Copernicus cost first.
+8. **Step 10:** the Sentinel-1 rice calendar, after the hackathon (decision C).
 
 ## Open questions for the user
 
-1. **Hackathon date.** What is the exact date and slot of the next round? `Context/refined_foundation.md` lists
-   the state-level round as 7 Nov to 5 Dec 2026 and national shortlisting as 5 to 15 Dec 2026. Confirm on the
-   portal, because that decides how many tasks fit.
-2. **Team task split.** Who owns which tasks above? Who records any new video? Which machine runs the demo? That
-   machine needs `.env`, a built `web/dist` and a warm-up run.
-3. **Report factor path.** For task 5, should it be the real feed, or the on-screen label as a stopgap?
-4. **Copernicus credentials.** Should they be rotated before the demo? `Context/refined_foundation.md` section 12
-   notes they were once found in `.env.example`, though never committed.
+1. **Push:** push `feat/stage2-hardening` to GitHub, and fast-forward `main`? Run the push checklist in
+   `Context/progress.md` first.
+2. **Team task split:** who rehearses, which machine presents, and who updates the video narration?
+3. **Copernicus credentials:** rotate them before the demo? `Context/refined_foundation.md` section 12 has the
+   history.

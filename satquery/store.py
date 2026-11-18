@@ -10,7 +10,7 @@ import sqlite3
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TypeVar
+from typing import Callable, TypeVar
 
 from pydantic import BaseModel
 
@@ -51,12 +51,32 @@ class Store:
         with self._lock:
             return self._db.execute("SELECT COUNT(*) FROM records WHERE kind = ?", (kind,)).fetchone()[0]
 
-    def next_id(self, kind: str, prefix: str) -> str:
-        """A readable sequential id, e.g. "RPT-0007". Ids are never reused within a database."""
-        with self._lock:
-            rows = self._db.execute("SELECT id FROM records WHERE kind = ?", (kind,)).fetchall()
+    def _next_id_locked(self, kind: str, prefix: str) -> str:
+        rows = self._db.execute("SELECT id FROM records WHERE kind = ?", (kind,)).fetchall()
         numbers = [int(r[0].rsplit("-", 1)[-1]) for r in rows if r[0].rsplit("-", 1)[-1].isdigit()]
         return f"{prefix}-{max(numbers, default=0) + 1:04d}"
+
+    def next_id(self, kind: str, prefix: str) -> str:
+        """A readable sequential id, e.g. "RPT-0007". Only a preview: use `insert_new` to claim one."""
+        with self._lock:
+            return self._next_id_locked(kind, prefix)
+
+    def insert_new(self, kind: str, prefix: str, build: Callable[[str], M]) -> M:
+        """Allocate the next sequential id and insert `build(id)` in one locked step.
+
+        Two requests at once (judges submitting from their phones) must never get the same id: with a
+        separate allocate and insert, `INSERT OR REPLACE` would silently drop one of the records.
+        """
+        with self._lock, self._db:
+            record_id = self._next_id_locked(kind, prefix)
+            record = build(record_id)
+            self._db.execute("INSERT INTO records (kind, id, doc, updated_at) VALUES (?, ?, ?, ?)",
+                             (kind, record_id, record.model_dump_json(), now_iso()))
+        return record
+
+    def delete(self, kind: str, record_id: str) -> None:
+        with self._lock, self._db:
+            self._db.execute("DELETE FROM records WHERE kind = ? AND id = ?", (kind, record_id))
 
     def delete_kind(self, kind: str) -> None:
         with self._lock, self._db:

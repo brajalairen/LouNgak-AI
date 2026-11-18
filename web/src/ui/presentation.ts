@@ -6,7 +6,11 @@
  *  Two parts: the label components (DemoChip, DemoTag, SampleLabel, SAMPLE chips) render nothing, and
  *  the API client passes every response through `scrub`, which rewrites only the specific server phrases
  *  below. The patterns name whole phrases ("Demo farmer", "DEMO: ", "(sample)"), so ids such as
- *  `demo-bishnupur-nambol` and status values such as `rule_status: "DEMO"` are never altered. */
+ *  `demo-bishnupur-nambol` and status values such as `rule_status: "DEMO"` are never altered.
+ *
+ *  Never reworded (decision A, 17 Nov 2026): synthetic pest reports. The risk score's report factor now
+ *  counts the app's own farmer reports and inspection outcomes; if the SAMPLE generator is switched back
+ *  on (SATQUERY_AGRI_REPORTS=sample), its SAMPLE wording and SampleLabel show in every mode. */
 
 const STORAGE_KEY = "loungak.showLabels";
 
@@ -38,10 +42,6 @@ const DROP: RegExp[] = [
   /\s*\[?DEMO RECORD [—–-] demonstration data, not a real report or inspection\]?/g,
   /\s*DEMO alert for the workflow demonstration: not from a real forecast\./g,
   /\s*\d+ DEMO alert\(s\) are shown for demonstration and labelled as such\./g,
-  /\s*Includes SAMPLE DATA [—–-] Prototype Simulation: the report figures are synthetic\./g,
-  /\s*SAMPLE DATA [—–-] Prototype Simulation: synthetic reports, not real observations\./g,
-  /\s*Report pressure uses SAMPLE \(synthetic\) reports, so confidence is at most medium\./g,
-  /\s*SYNTHETIC reports for prototype demonstration only; not real government or field observations\./g,
   /\s*Crop types and shares are SAMPLE \(synthetic, illustrative\): no crop-type data is loaded yet\./g,
 ];
 
@@ -50,19 +50,13 @@ const REWORD: [RegExp, string | ((match: string, ...groups: string[]) => string)
   [/\bDemo (farmer|field officer|district officer|state-level officer)\b/g, (_m, role: string) => capitalise(role)],
   [/\bDEMO:\s+/g, ""],
   [/; rule DEMO\./g, "."],
-  [/ \(sample\)/gi, ""],
-  [/\(SAMPLE\)/g, ""],
-  [/\bSAMPLE (pest )?report/g, (_m, pest = "") => `${pest}report`],
-  [/^SAMPLE DATA [—–-] Prototype Simulation$/, ""],
   [/\d+ demo monitoring rectangle\(s\) over valley farmland: not administrative boundaries\./g,
     (m) => `${m.split(" ")[0]} monitored zones over valley farmland.`],
   [/Demo monitoring rectangle drawn by the team: not an administrative boundary\./g, "Monitoring zone drawn by the team."],
   [/demo rectangle drawn by the team \(not an administrative boundary\)/g, "monitoring zone drawn by the team"],
   [/^Demo accounts for the prototype: anyone can switch between them\. This is not production authentication; /,
     "Accounts by role: "],
-  [/LouNgak AI sample-report generator \(seeded, deterministic\)/g, "LouNgak AI report feed"],
   [/LouNgak AI demonstration seed/g, "LouNgak AI"],
-  [/ it is capped at medium when an input is SAMPLE data and at low/g, " it is capped at low"],
 ];
 
 /** One string in its presentation wording. */

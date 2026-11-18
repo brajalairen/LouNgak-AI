@@ -7,14 +7,15 @@ factors still report. Scoring itself (`risk.py`) is a pure function of the gathe
 
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
+from typing import Protocol
 
 from satquery.agri import risk, rules as pest_rules
 from satquery.agri.areas import representative_point
 from satquery.agri.cache import JsonCache
 from satquery.agri.config import PestRulesConfig, RiskModelConfig, load_pest_rules, load_risk_model
 from satquery.agri.context import ReverseGeocoder, district_context
-from satquery.agri.models import MonitoredArea, RiskAssessment
+from satquery.agri.models import MonitoredArea, PestReport, Provenance, RiskAssessment
 from satquery.agri.ndvi import NdviClient
 from satquery.agri.reports import SampleReportSource
 from satquery.agri.weather import HourlyWeatherClient
@@ -22,17 +23,35 @@ from satquery.providers.errors import RetrievalError
 from satquery.specialists.weather import WeatherError
 
 
+class ReportSource(Protocol):
+    """Field reports (`field_reports.FieldReportSource`, the default) or SAMPLE ones (`reports.SampleReportSource`)."""
+
+    def for_area(self, area: MonitoredArea, end: date, lookback_days: int) -> tuple[list[PestReport], Provenance]: ...
+
+
 @dataclass
 class Sources:
     weather: HourlyWeatherClient | None
     ndvi: NdviClient | None
-    reports: SampleReportSource | None
+    reports: ReportSource | None
     geocoder: ReverseGeocoder | None = None
 
 
-def default_sources(settings, *, offline: bool = False, ndvi: bool = True, geocode: bool = False) -> Sources:
+def report_source(settings, store=None) -> ReportSource:
+    """The app's own field reports, unless SATQUERY_AGRI_REPORTS=sample asks for the SAMPLE generator."""
+    if settings.agri_reports == "sample":
+        return SampleReportSource()
+    from satquery.agri.field_reports import FieldReportSource
+    from satquery.store import Store
+
+    return FieldReportSource(store if store is not None else Store(settings.db_path))
+
+
+def default_sources(settings, *, offline: bool = False, ndvi: bool = True, geocode: bool = False,
+                    store=None) -> Sources:
     """Live sources with a disk cache under `runs/agri-cache`. NDVI needs Copernicus credentials;
-    without them the NDVI factor is reported unavailable rather than estimated."""
+    without them the NDVI factor is reported unavailable rather than estimated. Reports come from the
+    field-operations `store` (opened from SATQUERY_DB_PATH when not given)."""
     cache = JsonCache(settings.runs_dir / "agri-cache")
     provider = None
     if ndvi and settings.copernicus_client_id and settings.copernicus_client_secret:
@@ -41,7 +60,7 @@ def default_sources(settings, *, offline: bool = False, ndvi: bool = True, geoco
         provider = CopernicusSentinelProvider(settings.copernicus_client_id, settings.copernicus_client_secret)
     return Sources(weather=HourlyWeatherClient(cache, offline=offline),
                    ndvi=NdviClient(provider, cache, offline=offline) if ndvi else None,
-                   reports=SampleReportSource(),
+                   reports=report_source(settings, store),
                    geocoder=ReverseGeocoder(cache, offline=offline) if geocode else None)
 
 

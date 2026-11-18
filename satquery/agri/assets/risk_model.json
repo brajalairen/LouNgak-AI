@@ -36,7 +36,14 @@
       "moderate": 1.0,
       "high": 2.0
     },
-    "weighted_count_for_full_score": 6.0
+    "weighted_count_for_full_score": 6.0,
+    "field_weights": {
+      "farmer_reported": 1.0,
+      "concern_observed": 2.0,
+      "concern_not_observed": -1.0
+    },
+    "field_weighted_count_for_full_score": 3.0,
+    "field_categories": ["pest", "disease"]
   },
   "confidence": {
     "high_min_completeness": 0.9,

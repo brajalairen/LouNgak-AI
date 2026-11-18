@@ -198,3 +198,94 @@ def test_the_situation_view_counts_records_per_zone_without_private_counts_for_t
 
 def test_the_atlas_endpoint(client):
     assert len(client.get("/api/atlas/crops").json()["crops"]) == 3
+
+
+# ------------------------------------------------------------------------------- integrity and permissions
+
+THOUBAL_POINT = {"latitude": 24.615, "longitude": 93.92}
+
+
+def submit(client, farmer="farmer-bishnupur", **changes):
+    response = client.post("/api/ops/reports", json=report_body(**changes), headers=as_(farmer))
+    assert response.status_code == 200, response.text
+    return response.json()
+
+
+def task_for(client, officer, report_ids=(), alert_ids=(), **changes):
+    body = {"report_ids": list(report_ids), "alert_ids": list(alert_ids), "reason": "Check it.",
+            "priority": "high"} | changes
+    return client.post("/api/ops/tasks", json=body, headers=as_(officer))
+
+
+def test_an_officer_cannot_take_over_another_districts_report_by_bundling_it(client):
+    own = submit(client)
+    other = submit(client, "farmer-thoubal", district="Thoubal", **THOUBAL_POINT)
+    response = task_for(client, "district-bishnupur", [own["id"], other["id"]])
+    assert response.status_code == 403 and "Thoubal" in response.json()["detail"]
+    thoubal_view = client.get("/api/ops/reports", headers=as_("district-thoubal")).json()
+    assert thoubal_view[0]["status"] == "SUBMITTED" and thoubal_view[0]["task_id"] is None
+    # Even the state officer cannot mix districts into one inspection.
+    assert task_for(client, "state-officer", [own["id"], other["id"]]).status_code == 422
+
+
+def test_a_closed_or_already_tasked_report_cannot_be_tasked_again(client):
+    report = submit(client)
+    first = task_for(client, "district-bishnupur", [report["id"]]).json()
+    again = task_for(client, "district-bishnupur", [report["id"]])
+    assert again.status_code == 409 and first["id"] in again.json()["detail"]
+
+    client.post(f"/api/ops/tasks/{first['id']}/assign", json={"assigned_to": "field-bishnupur"},
+                headers=as_("district-bishnupur"))
+    outcome = {"result": "CONCERN_NOT_OBSERVED", "observed_crop": "rice", "crop_condition": "normal",
+               "public_summary": "Fields looked normal."}
+    client.post(f"/api/ops/tasks/{first['id']}/outcome", json=outcome, headers=as_("field-bishnupur"))
+    inspected = task_for(client, "district-bishnupur", [report["id"]])
+    assert inspected.status_code == 409 and "INSPECTED" in inspected.json()["detail"]
+
+
+def test_an_alert_already_in_an_open_inspection_is_not_tasked_twice(client):
+    seed.seed(client.store)
+    demo = next(a for a in client.get("/api/watch/alerts").json()["alerts"] if a["is_demo"])
+    assert task_for(client, "district-thoubal", alert_ids=[demo["id"]]).status_code == 403
+    assert task_for(client, "district-bishnupur", alert_ids=[demo["id"]]).status_code == 200
+    assert task_for(client, "district-bishnupur", alert_ids=[demo["id"]]).status_code == 409
+
+
+def test_due_dates_and_gps_fields_are_validated(client):
+    report = submit(client)
+    assert task_for(client, "district-bishnupur", [report["id"]], due_on="next friday").status_code == 422
+    task = task_for(client, "district-bishnupur", [report["id"]], due_on="2026-11-25",
+                    assigned_to="field-bishnupur").json()
+    assert task["due_on"] == "2026-11-25"
+    outcome = {"result": "INCONCLUSIVE", "observed_crop": "rice", "crop_condition": "normal",
+               "public_summary": "Could not tell.", "gps_latitude": 124.6, "gps_longitude": 93.8}
+    url = f"/api/ops/tasks/{task['id']}/outcome"
+    assert client.post(url, json=outcome, headers=as_("field-bishnupur")).status_code == 422
+    assert client.post(url, json=outcome | {"gps_latitude": 24.6, "gps_longitude": None},
+                       headers=as_("field-bishnupur")).status_code == 422
+    assert client.post(url, json=outcome | {"gps_latitude": 24.6},
+                       headers=as_("field-bishnupur")).status_code == 200
+
+
+def test_concurrent_submissions_get_distinct_ids_and_none_is_lost(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+
+    from satquery.ops.models import ReportCreate
+    from satquery.ops.service import OpsService
+    from satquery.ops.users import USERS
+
+    store = Store(tmp_path / "ops.sqlite3")
+    service = OpsService(store, AssessmentService(Settings(runs_dir=tmp_path, agri_warmup=False),
+                                                  sources=Sources(weather=FakeWeather({}), ndvi=None,
+                                                                  reports=SampleReportSource())))
+    body = ReportCreate(**report_body())
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        ids = list(pool.map(lambda _: service.create_report(USERS["farmer-bishnupur"], body).id, range(50)))
+    assert len(set(ids)) == 50 and store.count("report") == 50
+
+
+def test_a_wrong_assignee_leaves_no_orphan_task_behind(client):
+    report = submit(client)
+    assert task_for(client, "district-bishnupur", [report["id"]], assigned_to="field-valley").status_code == 422
+    assert client.store.count("task") == 0
+    assert task_for(client, "district-bishnupur", [report["id"]], assigned_to="field-bishnupur").status_code == 200

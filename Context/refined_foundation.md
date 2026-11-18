@@ -91,7 +91,7 @@ question-answering engine. The table shows the state **after** Sprint 0 (branch 
 | **Partial** | Combined situation summary: per-zone counts only (no situation-report document yet) | `/api/ops/situation` |
 | Partial | Water analysis exists on demand for a drawn area, but there are no water/flood alerts | `satquery/specialists/tools.py` |
 | Partial | Archived contracts for inspections and observations (tag `archive/recover-local-ag04-work`): ideas were ported, not the files | git tag |
-| **Not implemented** | Real authentication; official IMD/CWC/NDMA warnings; crop-type data (the map's crops are SAMPLE); per-cell risk or NDVI analysis; automatic district routing of reports; verified district boundaries in the repository; farmer reports feeding the risk score; situation reports; LLM explanation layer; notifications; offline field mode; farm registration | — |
+| **Not implemented** | Real authentication; official IMD/CWC/NDMA warnings; crop-type data (the map's crops are SAMPLE); per-cell risk or NDVI analysis; automatic district routing of reports; verified district boundaries in the repository; situation reports; LLM explanation layer; notifications; offline field mode; farm registration | — |
 | **Removed in Sprint 0** | Legacy Gradio HF Space (`app.py`, `satquery/ui.py`), imagery CLI (`satquery/cli.py`), SIH-era `presentation-assets/`, dead code (see progress.md) | — |
 
 **Tests (31 Oct 2026, after the agricultural map):** 852 backend (pytest; 3 skipped) and 126 frontend (Vitest), all
@@ -144,7 +144,8 @@ passing. `tests/test_contract.py` keeps the 64 Python wire models and their Type
 4. **District boundaries from OSM** and automatic district routing of reports. *The OSM outlines ship and draw on
    the map; routing a report to the district containing its pin is still to do.*
 5. **Farmer reports and verified outcomes feeding the risk engine**, replacing the SAMPLE report factor (the
-   seam is `Sources.reports.for_area()` in `satquery/agri/pipeline.py`).
+   seam is `Sources.reports.for_area()` in `satquery/agri/pipeline.py`). *Done 18 Nov 2026:
+   `satquery/agri/field_reports.py`; see `docs/decisions.md`, decision D.*
 6. **Water/flood alerts** from Sentinel-1 water extent for monitored zones.
 7. **Official warnings:** investigate NDMA SACHET's CAP feed and IMD district warnings; link-outs first,
    ingestion only after checking terms.

@@ -173,6 +173,16 @@ def test_the_ndvi_reasons_give_the_numbers_years_coverage_and_caveat():
     assert "not cropland alone" in reasons[3]
 
 
+def test_a_drop_inside_the_earlier_years_range_is_ordinary_variation_not_a_decline():
+    # 0.62 is 11% below the 0.70 average (beyond the ignore band), but 2024 was lower still: an earlier harvest
+    # this year looks like this, and it must not raise a crop-health alert during the harvest weeks.
+    within = risk.ndvi_factor(anomaly(0.62, (0.80, 0.60, 0.70)), None, MODEL)
+    assert within.score == 0.0 and within.status == "ok"
+    assert "within the range of those years (0.60-0.80), so it is not scored as a decline" in within.reasons[2]
+    outside = risk.ndvi_factor(anomaly(0.55, (0.80, 0.60, 0.70)), None, MODEL)
+    assert outside.score > 0 and "outside the range" in outside.reasons[2]
+
+
 def test_a_cloudy_current_window_makes_ndvi_unavailable_not_zero():
     result = risk.ndvi_factor(anomaly(0.6, pixels=1000, nodata=900), None, MODEL)
     assert result.status == "unavailable" and result.score is None

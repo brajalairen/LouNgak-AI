@@ -3,7 +3,8 @@
 Factors, each scored 0..1 by rules kept as data (`config.py`):
   weather_pest     the strongest pest-favourable-weather index (`rules.py`)
   ndvi_anomaly     how far vegetation (NDVI) is below the same dates in earlier years (`ndvi.py`)
-  report_pressure  recent pest reports in the area, weighted by severity (SAMPLE data in this prototype)
+  report_pressure  recent field records in the area: farmer reports and inspection outcomes, weighted by
+                   their evidence (`field_reports.py`); or SAMPLE reports by severity when switched on
 
 Score = sum(weight x factor score) / sum(weight) over the AVAILABLE factors, shown as 0-100 with
 each factor's points, so the score is always the sum of its visible parts. A missing factor is
@@ -26,7 +27,8 @@ from satquery.agri.ndvi import NdviClient
 
 FACTOR_NAMES = {"weather_pest": "Pest-favourable weather",
                 "ndvi_anomaly": "Vegetation condition vs earlier years (NDVI)",
-                "report_pressure": "Recent pest reports (SAMPLE)"}
+                "report_pressure": "Field reports of pests and diseases"}
+SAMPLE_FACTOR_NAME = "Recent pest reports (SAMPLE)"  # the synthetic generator, when switched on
 LEVEL_ORDER = {"CRITICAL": 0, "HIGH": 1, "MODERATE": 2, "LOW": 3, "INSUFFICIENT_DATA": 4}
 CONFIDENCE_METHOD = ("Rule-based label, not a calibrated probability: data completeness sets it (high at or above "
                      "the high cut, medium at or above the medium cut); it is capped at medium when an input is SAMPLE "
@@ -95,14 +97,21 @@ def ndvi_factor(anomaly: NdviAnomaly | None, error: str | None, model: RiskModel
     drop = max(0.0, -change)
     low = cfg.ignore_relative_drop_below
     score = 0.0 if drop <= low else min(1.0, (drop - low) / (cfg.relative_drop_for_full_score - low))
+    # A value inside the spread of the earlier years is ordinary year-to-year variation (an earlier or later
+    # harvest, for example), not a decline: it is not scored, so it raises no crop-health alert.
+    if anomaly.within_baseline_range:
+        score = 0.0
     years = ", ".join(w.label for w in anomaly.baseline if w.usable)
     direction = "below" if change < 0 else "above"
     reasons = [f"NDVI over the observed land in the last {cfg.window_days} days is {current.mean:.2f}, "
                f"{abs(change):.0%} {direction} the {anomaly.baseline_mean:.2f} average for the same dates in {years}.",
                f"{current.observed_fraction:.0%} of the area had at least one clear Sentinel-2 view in the window."]
     low_b, high_b = anomaly.baseline_range
-    reasons.append(f"That is {'within' if anomaly.within_baseline_range else 'outside'} the range of those years "
-                   f"({low_b:.2f}-{high_b:.2f}).")
+    if anomaly.within_baseline_range:
+        reasons.append(f"That is within the range of those years ({low_b:.2f}-{high_b:.2f}), so it is not scored as "
+                       "a decline: it is ordinary variation between years.")
+    else:
+        reasons.append(f"That is outside the range of those years ({low_b:.2f}-{high_b:.2f}).")
     reasons.append("NDVI covers all clear land in the area (crops, trees, grass), not cropland alone; a change can "
                    "also come from sowing or harvest timing.")
     availability = round(anomaly.baseline_years_used / cfg.baseline_years, 3)
@@ -112,11 +121,52 @@ def ndvi_factor(anomaly: NdviAnomaly | None, error: str | None, model: RiskModel
                         reasons=reasons, provenance=provenance, details=details, thresholds=model.status)
 
 
+EVIDENCE_TEXT = {"farmer_reported": "farmer-reported, unverified",
+                 "concern_observed": "concern observed by a field officer",
+                 "concern_not_observed": "inspected, concern not observed"}
+
+
+def _field_report_factor(reports: list[PestReport], provenance: Provenance | None,
+                         model: RiskModelConfig) -> FactorResult:
+    """Report pressure from the app's own field records: every record named by id, weighted by its evidence."""
+    weight, cfg = model.weights["report_pressure"], model.reports
+    weights, full = cfg.field_weights, cfg.field_weighted_count_for_full_score
+    counted = [r.model_copy(update={"weight": getattr(weights, r.evidence)}) for r in reports
+               if r.evidence in EVIDENCE_TEXT and r.pest in cfg.field_categories]
+    weighted = max(0.0, sum(r.weight for r in counted))
+    score = min(1.0, weighted / full)
+    by_evidence = {key: sum(1 for r in counted if r.evidence == key) for key in EVIDENCE_TEXT}
+    days = cfg.lookback_days
+    if counted:
+        listed = "; ".join(f"{r.id} ({r.pest}, {EVIDENCE_TEXT[r.evidence]}, {r.weight:+g})" for r in counted)
+        reasons = [f"{len(counted)} field record(s) on pests or diseases in the last {days} days inside the area: "
+                   f"{listed}."]
+        summary = (f"{len(counted)} field record(s): {by_evidence['farmer_reported']} farmer-reported, "
+                   f"{by_evidence['concern_observed']} concern observed, {by_evidence['concern_not_observed']} not "
+                   f"observed (weighted {weighted:g} of {full:g} for full pressure)")
+    else:
+        reasons = [f"No field reports of pests or diseases in the last {days} days inside the area. That is not "
+                   "evidence that there are none: only that none was submitted in the app."]
+        summary = f"No field reports of pests or diseases in the last {days} days"
+    reasons.append(f"Each record counts by its evidence (PLACEHOLDER weights): a farmer's report "
+                   f"{weights.farmer_reported:+g}, a concern an officer observed {weights.concern_observed:+g}, an "
+                   f"inspection that did not observe it {weights.concern_not_observed:+g}; {full:g} gives full "
+                   "pressure.")
+    return FactorResult(id="report_pressure", name=FACTOR_NAMES["report_pressure"], weight=weight,
+                        score=round(score, 3), status="ok", availability=1.0, sample_data=False, summary=summary,
+                        reasons=reasons, provenance=[provenance] if provenance else [], thresholds=model.status,
+                        details={"source": "FIELD", "count": len(counted), "weighted": weighted,
+                                 "by_evidence": by_evidence, "lookback_days": days,
+                                 "reports": [r.model_dump() for r in counted]})
+
+
 def report_factor(reports: list[PestReport] | None, provenance: Provenance | None, model: RiskModelConfig,
                   today: date) -> FactorResult:
     weight, cfg = model.weights["report_pressure"], model.reports
     if reports is None:
         return _unavailable("report_pressure", weight, "no pest-report source is connected", thresholds=model.status)
+    if provenance is not None and provenance.state != "SAMPLE":
+        return _field_report_factor(reports, provenance, model)
     weighted = sum(cfg.severity_weights[r.severity] for r in reports)
     score = min(1.0, weighted / cfg.weighted_count_for_full_score)
     by_pest, by_severity = {}, {"low": 0, "moderate": 0, "high": 0}
@@ -131,7 +181,7 @@ def report_factor(reports: list[PestReport] | None, provenance: Provenance | Non
         reason = f"No SAMPLE pest reports in the last {cfg.lookback_days} days inside the area."
     sample = any(r.synthetic for r in reports) or (provenance is not None and provenance.state == "SAMPLE")
     reasons = [reason + (f" {SAMPLE_LABEL}: synthetic reports, not real observations." if sample else "")]
-    return FactorResult(id="report_pressure", name=FACTOR_NAMES["report_pressure"], weight=weight,
+    return FactorResult(id="report_pressure", name=SAMPLE_FACTOR_NAME, weight=weight,
                         score=round(score, 3), status="ok", availability=1.0, sample_data=sample,
                         summary=f"{len(reports)} SAMPLE report(s), {by_severity['high']} high severity "
                                 f"(weighted {weighted:g} of {cfg.weighted_count_for_full_score:g} for full pressure)",

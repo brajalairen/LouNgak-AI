@@ -1,7 +1,9 @@
 # Working on LouNgak AI: guide for contributors and AI agents
 
-**Read this first, then [progress.md](progress.md) (where things stand) and
-[refined_foundation.md](refined_foundation.md) (what we are building and why).**
+> **Since 17 Nov 2026 the current state lives in the repository root:** read `CLAUDE.md`, then `PROGRESS.md` and
+> `HANDOFF.md`. [progress.md](progress.md) in this folder is the history up to 31 Oct 2026.
+
+**Read this for conventions, then [refined_foundation.md](refined_foundation.md) (what we are building and why).**
 [foundation_v1.md](foundation_v1.md) is the original long-form product brief: background, not instructions.
 
 ## The project in five lines
@@ -17,7 +19,7 @@ Cause, VBYLD 2027) that must stay honest about what is real, placeholder or demo
 | Path | What lives there |
 |---|---|
 | `satquery/server.py` | FastAPI app factory `create_app()`; imagery, upload and weather endpoints; mounts all routers and `web/dist` |
-| `satquery/agri/` | Risk engine: zones (`assets/demo_areas.geojson`), weather, NDVI, SAMPLE reports, rules, scoring (`risk.py`), service and snapshot, `/api/agri/*` |
+| `satquery/agri/` | Risk engine: zones (`assets/demo_areas.geojson`), weather, NDVI, field reports (`field_reports.py`; the SAMPLE generator `reports.py` is off by default), rules, scoring (`risk.py`), service (stale-while-revalidate refresh) and snapshot, `/api/agri/*` |
 | `satquery/watch/` | LouNgak Watch: `alerts.py` derives alerts from the assessment; rules in `assets/alert_rules.json` |
 | `satquery/ops/` | Field operations: `models.py` (wire models), `users.py` (demo accounts, permission helpers), `service.py` (workflow rules), `routes.py` (`/api/ops/*`, `/api/watch/*`), `seed.py` + `__main__.py` (DEMO data CLI) |
 | `satquery/store.py` | SQLite document store (`data/loungak.sqlite3`, gitignored) |
@@ -46,7 +48,8 @@ cd web; npm ci; npm run build; cd ..
 Copy-Item .env.example .env      # then put real Copernicus credentials in .env (never in .env.example)
 
 .venv\Scripts\python -m satquery.ops reset        # clear reports, tasks, acknowledgements, DEMO alerts
-.venv\Scripts\python -m satquery.ops seed-demo    # add the DEMO reports and alert
+.venv\Scripts\python -m satquery.ops seed-demo    # restore the DEMO reports and alert (idempotent)
+.venv\Scripts\python -m satquery.ops preflight    # pre-demo check: PASS / WARN / FAIL, non-zero exit on FAIL
 .venv\Scripts\python -m uvicorn satquery.server:app --port 8000   # http://127.0.0.1:8000
 
 .venv\Scripts\python -m pytest                    # backend (no network, GPU or credentials)
@@ -63,7 +66,8 @@ provider. For frontend work, `npm run dev` in `web/` (port 5173, proxies `/api` 
 2. **Never invent** agronomic numbers, crop calendars, pest prevalence, field observations, beneficiaries or
    impact figures. If a source is missing, write *source needed*.
 3. **Label everything** that is not real and verified:
-   - `SAMPLE`: synthetic pest reports in the risk score, and the crop types and shares on the map;
+   - `SAMPLE`: the crop types and shares on the map, and the synthetic pest-report generator when it is switched
+     on (`SATQUERY_AGRI_REPORTS=sample`; by default the risk score counts the app's own field reports);
    - `PLACEHOLDER`: unverified thresholds;
    - `UNVALIDATED`: rules built on placeholders;
    - `DEMO`: seeded workflow records;
@@ -96,7 +100,8 @@ provider. For frontend work, `npm run dev` in `web/` (port 5173, proxies `/api` 
   the server's demo wording are hidden or reworded for display only; the data and status fields are unchanged. When
   you add a DEMO/SAMPLE label, render it only when `SHOW_LABELS` is true, and add any new server phrase to the
   patterns there. The switch is "Show data labels" in the map's layers panel. Keep the disclosure in the data
-  sources note, the README and the docs.
+  sources note, the README and the docs. **Never** hide or reword synthetic pest-report wording (`SampleLabel`
+  renders in every mode; decision A in `docs/decisions.md`).
 - **Error boundary:** `App.tsx` wraps each page in `ui/ErrorBoundary.tsx`, so a page error shows a notice rather than
   a blank app. When a page closes, React runs `MapView`'s cleanup (which removes the map) before its children's:
   child cleanups may only call `map.off` and `marker.remove()`, never `removeControl` or `removeLayer`. Add map
@@ -124,7 +129,8 @@ provider. For frontend work, `npm run dev` in `web/` (port 5173, proxies `/api` 
 
 ## Workflow
 
-- **Branches:** work on a feature branch (current: `feat/mvp-slice`) and keep `main` fast-forward-only. Never
+- **Branches:** work on a feature branch (current: `feat/stage2-hardening`, branched from `feat/agri-map`) and keep
+  `main` fast-forward-only. Never
   rewrite `main` history or delete the `archive/*` and `backup/*` tags.
 - **Commits:** small and reviewable, conventional prefixes (`feat:`, `fix:`, `chore:`, `docs:`). Run the tests
   before committing.

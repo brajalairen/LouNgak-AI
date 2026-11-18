@@ -3,6 +3,41 @@
 Newest first. Each entry gives the date, the decision, and why. Older decisions (31 Oct 2026) are in
 `Context/progress.md` and `Context/refined_foundation.md` section 10.
 
+## 18 Nov 2026
+
+### D. Decision A is implemented as the real feed: field reports drive the score
+
+The report factor now counts the app's own farmer reports and inspection outcomes (`satquery/agri/field_reports.py`).
+Evidence sets the weight: a farmer's report +1, a concern an officer observed +2, an inspection that did not observe
+it −1, with the total floored at 0 (PLACEHOLDER, in `risk_model.json`). Dismissed reports, categories other than pest
+and disease, and DEMO records do not count. The SAMPLE generator stays behind `SATQUERY_AGRI_REPORTS=sample`. When it
+is on, its labels show in every mode, because presentation mode no longer rewords SAMPLE pest-report text.
+
+**Why.** It removes the largest synthetic input (review P0-2) and makes "farmers and officers inform the system" true.
+DEMO records are excluded so that demonstration data never moves a real score.
+
+### E. DEMO and real records never share an inspection
+
+`create_task` refuses a mix. **Why.** It keeps the promise that demo data is never mixed with real data, and it lets
+`seed-demo` restore the demo scenario by deleting DEMO inspections without stranding a real report.
+
+### F. Persisting alerts are identified by episode
+
+Crop-health and pest/disease alerts are keyed by rule, zone and the date the episode started (stored as
+`alert_episode`). An episode continues while the alert reappears within 3 days, which also covers a server that was
+off for a day. Heavy-rain alerts keep their forecast day in the id. Expired alerts, DEMO included, are hidden.
+**Why.** It fixes review P0-3 and P0-4: acknowledgements and inspections no longer lose their alert overnight.
+
+### G. An NDVI value inside the earlier years' range is not a decline
+
+**Why.** In the harvest weeks an earlier harvest easily gives an 8% drop, which raised false crop-health alerts (review
+P2-2, step 6a). The cropland mask and per-cell NDVI (step 6b) remain to do.
+
+### H. Smart App Control stays on
+
+On the development laptop, Smart App Control blocks `.venv\Scripts\python.exe`, but not the base uv interpreter. The
+README gives the base-interpreter command. **Why.** Windows cannot switch Smart App Control back on without a reinstall.
+
 ## 17 Nov 2026
 
 ### A. Simulated pest reports are never shown as a real feed

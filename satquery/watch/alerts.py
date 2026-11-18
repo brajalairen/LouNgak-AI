@@ -2,8 +2,14 @@
 
 The alerts are derived each time from the current assessment (`AssessmentService.snapshot()`), so they
 can never drift from the evidence shown in the risk drawer. Only what people do with an alert
-(acknowledging it) is stored. An alert's id is its deduplication key: the same rule, zone and day give
-the same id, so recomputing never creates a duplicate.
+(acknowledging it, raising an inspection) and when its episode started are stored. An alert's id is its
+deduplication key, so recomputing never creates a duplicate:
+
+- a heavy-rain alert is about one forecast day, so its id names that day;
+- crop-health and pest/disease alerts are conditions that persist, so `derive` gives them a rule-and-zone
+  key, and the field-operations service appends the date the episode started (`with_episodes`). The same
+  condition firing on the next day keeps its id, so acknowledgements and inspections are not orphaned
+  overnight; after a gap it starts a new episode with a new id.
 
 Category, priority and evidence status are separate on purpose: a forecast can be high priority and
 still only a forecast; a satellite observation can be low priority and still an observation.
@@ -125,10 +131,8 @@ def crop_health(area: MonitoredArea, a: RiskAssessment, rules: dict, issued: str
     factor = next((f for f in a.factors if f.id == "ndvi_anomaly"), None)
     if factor is None or factor.status == "unavailable" or factor.score is None or factor.score < cfg["min_factor_score"]:
         return []
-    anomaly = factor.details.get("anomaly") or {}
-    window_end = (anomaly.get("current") or {}).get("end") or today.isoformat()
     return [Alert(
-        id=f"crop_health.ndvi_decline.{area.id}.{window_end}", category="crop_health", subtype="ndvi_decline",
+        id=f"crop_health.ndvi_decline.{area.id}", category="crop_health", subtype="ndvi_decline",
         title=f"Vegetation below earlier years near {area.name}",
         summary=factor.summary + ". A satellite observation that calls for a field check, not a diagnosis.",
         priority="moderate", evidence_status="satellite_observed", gate="qualified_watch",
@@ -151,7 +155,7 @@ def pest_watch(area: MonitoredArea, a: RiskAssessment, rules: dict, issued: str)
         forecast_days = [d for d in p.days if d.period == "forecast"]
         valid_until = _end_of_day(forecast_days[-1].date) if forecast_days else issued
         alerts.append(Alert(
-            id=f"{'disease' if disease else 'pest'}.{p.pest_id}.{area.id}.{forecast_days[0].date if forecast_days else issued[:10]}",
+            id=f"{'disease' if disease else 'pest'}.{p.pest_id}.{area.id}",
             category="disease" if disease else "pest", subtype=p.pest_id,
             title=f"Weather conducive to {p.name.lower()} near {area.name} (unvalidated rule)",
             summary=(f"{p.favourable_forecast} of the next {p.forecast_days} forecast days meet the placeholder "
@@ -178,6 +182,50 @@ def derive(areas: dict[str, MonitoredArea], assessments: list[RiskAssessment], r
         alerts += crop_health(area, a, rules, issued, now.date())
         alerts += pest_watch(area, a, rules, issued)
     return alerts
+
+
+EPISODIC_CATEGORIES = ("crop_health", "pest", "disease")  # ids from `derive` are rule-and-zone keys
+EPISODE_GAP_DAYS = 3  # seen again within this many days: the same episode (covers a server that was off a day)
+MANIPUR_TZ = timezone(timedelta(hours=5, minutes=30))
+
+
+class AlertEpisode(BaseModel):
+    """When a persisting condition (rule and zone) was first and last seen. Stored, so ids survive the night."""
+
+    id: str             # the rule-and-zone key from `derive`
+    started_on: str     # local date (Asia/Kolkata) the episode was first seen
+    last_seen_on: str
+
+
+def with_episodes(alerts: list[Alert], episodes: dict[str, AlertEpisode], today: date
+                  ) -> tuple[list[Alert], list[AlertEpisode]]:
+    """Give each persisting alert the id of its episode: `<rule-and-zone key>.<start date>`.
+
+    Returns the alerts and the episode records that changed (new, or seen on a new day), for storing.
+    An episode continues while the condition is seen again within EPISODE_GAP_DAYS of the last sighting.
+    """
+    out, changed = [], []
+    for alert in alerts:
+        if alert.category not in EPISODIC_CATEGORIES:
+            out.append(alert)
+            continue
+        episode = episodes.get(alert.id)
+        if episode is None or (today - date.fromisoformat(episode.last_seen_on)).days > EPISODE_GAP_DAYS:
+            episode = AlertEpisode(id=alert.id, started_on=today.isoformat(), last_seen_on=today.isoformat())
+            changed.append(episode)
+        elif episode.last_seen_on != today.isoformat():
+            episode = episode.model_copy(update={"last_seen_on": today.isoformat()})
+            changed.append(episode)
+        out.append(alert.model_copy(update={"id": f"{alert.id}.{episode.started_on}"}))
+    return out, changed
+
+
+def is_expired(alert: Alert, now: datetime) -> bool:
+    """Whether the alert's validity has passed (an unparseable date is never treated as expired)."""
+    try:
+        return datetime.fromisoformat(alert.valid_until) < now
+    except ValueError:
+        return False
 
 
 PRIORITY_ORDER = {"urgent": 0, "high": 1, "moderate": 2, "low": 3}

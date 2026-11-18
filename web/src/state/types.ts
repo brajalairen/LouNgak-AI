@@ -355,12 +355,19 @@ export interface PestReport {
   longitude: number;
   observed_on: string;
   crop: string;
+  /** SAMPLE: a pest rule id; FIELD: the report category ("pest" or "disease"). */
   pest: string;
-  severity: "low" | "moderate" | "high";
-  source: "SAMPLE";
+  /** SAMPLE only: a farmer report states no severity, and none is invented. */
+  severity: "low" | "moderate" | "high" | null;
+  /** FIELD: a farmer report or inspection outcome from the app; SAMPLE: synthetic, labelled. */
+  source: "SAMPLE" | "FIELD";
   synthetic: boolean;
   verified: boolean;
   label: string;
+  /** FIELD: "farmer_reported", "concern_observed" or "concern_not_observed". */
+  evidence: string | null;
+  /** FIELD: what this record adds to the weighted count (negative when a concern was not observed). */
+  weight: number | null;
 }
 
 export interface DayCheck {
