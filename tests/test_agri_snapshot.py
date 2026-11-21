@@ -44,13 +44,66 @@ def test_a_frozen_snapshot_is_always_labelled_snapshot_never_live(tmp_path):
     assert path.name == "snapshot.json" and path.parent.name == "agri"
 
 
-def test_live_is_preferred_and_the_snapshot_serves_only_when_live_is_incomplete(tmp_path):
+def factor(assessment, factor_id):
+    return next(f for f in assessment.factors if f.id == factor_id)
+
+
+def test_live_is_preferred_and_the_snapshot_fills_only_the_inputs_that_are_missing_live(tmp_path):
+    complete_live = service(tmp_path).snapshot()
     service(tmp_path).save_snapshot()  # a complete snapshot
     complete = service(tmp_path).snapshot()
-    assert complete.mode == "live", "complete live data wins"
+    assert complete.mode == "live" and complete.fallback_reason is None, "complete live data wins"
     down = service(tmp_path, weather=FakeWeather(HUMID, fail_inside=(90, 20, 100, 30)),
                    ndvi=NdviClient(None)).snapshot()
-    assert down.mode == "snapshot" and "Live data is incomplete" in down.fallback_reason
+    assert down.mode == "live" and down.snapshot_saved_at
+    assert "frozen snapshot" in down.fallback_reason and "field reports, is live" in down.fallback_reason
+    saved = {a.area_id: a for a in complete_live.assessments}
+    for a in down.assessments:
+        for factor_id in ("weather_pest", "ndvi_anomaly"):
+            filled, had = factor(a, factor_id), factor(saved[a.area_id], factor_id)
+            if had.score is None:  # nothing to fill from: still unavailable, never estimated
+                assert filled.score is None
+                continue
+            assert filled.score == had.score and {p.state for p in filled.provenance} == {"SNAPSHOT"}
+            assert filled.reasons[0].startswith("Taken from the frozen snapshot saved")
+        assert {p.state for p in factor(a, "report_pressure").provenance} == {"SAMPLE"}, "reports are never filled"
+    # The same inputs give the same scores: filling re-scores, it does not invent anything.
+    assert sorted((a.area_id, a.score) for a in down.assessments) == sorted(
+        (a.area_id, a.score) for a in complete_live.assessments)
+
+
+def test_a_new_field_report_still_moves_the_score_while_ndvi_comes_from_the_snapshot(tmp_path):
+    """The live demo moment on a bad venue network: Copernicus is unreachable, so NDVI comes from Saturday's
+    snapshot, and a farmer's pest report must still raise the zone's score and be cited by id."""
+    from datetime import datetime, timezone
+
+    from satquery.agri.field_reports import FieldReportSource
+    from satquery.ops.models import FarmerReport
+    from satquery.store import Store
+
+    store = Store(":memory:")
+    service(tmp_path, reports=FieldReportSource(store)).save_snapshot()  # complete, no reports yet
+    down = service(tmp_path, reports=FieldReportSource(store), ndvi=NdviClient(None))
+    zone = "demo-bishnupur-nambol"
+    before = down.snapshot().assessment(zone)
+    assert factor(before, "ndvi_anomaly").score is not None, "NDVI filled from the snapshot"
+    assert factor(before, "report_pressure").score == 0
+    store.put("report", "RPT-0001", FarmerReport(
+        id="RPT-0001", category="pest", crop="rice", growth_stage=None, description="Hoppers.", latitude=24.665,
+        longitude=93.80, location_source="map_pin", district="Bishnupur", h3_cell="x", zone_id=zone,
+        reporter_id="farmer-bishnupur", reporter_name="Farmer", submitted_at=datetime.now(timezone.utc).isoformat()))
+    down.invalidate()
+    down.refresh_thread.join(timeout=10)
+    after = down.snapshot().assessment(zone)
+    assert after.score > before.score, "the report moves the score although NDVI is not live"
+    assert factor(after, "report_pressure").score > 0 and any("RPT-0001" in r for r in after.reasons)
+    assert {p.state for p in factor(after, "ndvi_anomaly").provenance} == {"SNAPSHOT"}
+
+
+def test_a_partly_filled_assessment_is_never_frozen_as_a_new_snapshot(tmp_path):
+    service(tmp_path).save_snapshot()
+    with pytest.raises(AgriUnavailable, match="not live"):
+        service(tmp_path, ndvi=NdviClient(None)).save_snapshot()
 
 
 def test_without_a_snapshot_incomplete_live_data_is_shown_honestly(tmp_path):

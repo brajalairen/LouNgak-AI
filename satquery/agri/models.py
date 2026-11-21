@@ -47,7 +47,12 @@ class MonitoredArea(BaseModel):
 
 
 class PestReport(BaseModel):
-    """A pest or disease report. In this prototype every report is SAMPLE (synthetic)."""
+    """A pest or disease report counted by the report-pressure factor.
+
+    FIELD: a report submitted in the app by a farmer, or an inspection outcome recorded by a field officer
+    (`id` is the record's id, `evidence` says which, `weight` is what it adds to the pressure).
+    SAMPLE: synthetic, from the prototype's generator (`severity` set, `synthetic` true), off by default.
+    """
 
     id: str
     area_id: str | None
@@ -55,12 +60,14 @@ class PestReport(BaseModel):
     longitude: float
     observed_on: str  # ISO date
     crop: str
-    pest: str  # pest rule id, e.g. "rice_blast"
-    severity: Severity
-    source: Literal["SAMPLE"] = "SAMPLE"
+    pest: str  # SAMPLE: a pest rule id, e.g. "rice_blast"; FIELD: the report category, "pest" or "disease"
+    severity: Severity | None = None  # SAMPLE only; a farmer report states no severity, none is invented
+    source: Literal["SAMPLE", "FIELD"] = "SAMPLE"
     synthetic: bool = True
-    verified: bool = False
+    verified: bool = False  # FIELD: an officer observed the concern in the field (not a laboratory diagnosis)
     label: str = SAMPLE_LABEL
+    evidence: str | None = None   # FIELD: e.g. "farmer-reported, unverified"
+    weight: float | None = None   # FIELD: this record's contribution to the weighted count (can be negative)
 
 
 class SampleReportSet(BaseModel):

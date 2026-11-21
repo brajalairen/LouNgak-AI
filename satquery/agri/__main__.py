@@ -88,7 +88,8 @@ def _warm(args) -> int:
     print(_table(snapshot.assessments))
     print(f"\nComputed {snapshot.computed_at} ({snapshot.mode}).")
     status = 0
-    if snapshot.mode == "snapshot":
+    if snapshot.mode == "snapshot" or snapshot.fallback_reason:
+        # Not all of today's data could be fetched: keep the existing snapshot rather than freeze old inputs again.
         print(f"WARNING: live data was incomplete, so the existing snapshot was kept: {snapshot.fallback_reason}")
         status = 1
     elif args.save_snapshot:

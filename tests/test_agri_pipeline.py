@@ -98,6 +98,12 @@ def test_the_command_line_reports_thresholds_and_writes_assessments(tmp_path, mo
     target = tmp_path / "out.json"
     assert cli.main(["assess", "--offline", "--json", str(target)]) == 0
     out = capsys.readouterr().out
-    assert "INSUFFICIENT_DATA" in out and "Includes SAMPLE DATA" in out and "Decision support only" in out
+    assert "INSUFFICIENT_DATA" in out and "Decision support only" in out
+    assert "SAMPLE" not in out, "the default report source is the app's field reports, not the SAMPLE generator"
     written = json.loads(target.read_text(encoding="utf-8"))
     assert len(written) == 7 and written[0]["disclaimer"].startswith("Decision support only")
+    assert not any(a["includes_sample_data"] for a in written)
+
+    monkeypatch.setenv("SATQUERY_AGRI_REPORTS", "sample")
+    assert cli.main(["assess", "--offline", "--json", str(target)]) == 0
+    assert "Includes SAMPLE DATA" in capsys.readouterr().out, "switched on, SAMPLE reports stay labelled"

@@ -12,7 +12,6 @@ import { Button, cx, Segmented, Spinner } from "../ui/primitives";
 import { CompletenessBar, DemoTag, LevelBadge, StateChip } from "./badges";
 import { filterDistricts, FILTER_OPTIONS, formatScore, formatTime, LEVEL_COLOR, LEVEL_LABEL, LEVELS } from "./format";
 import { useAgriStore } from "./useAgriStore";
-import { SHOW_LABELS } from "../ui/presentation";
 
 export function PriorityPanel() {
   const overview = useAgriStore((s) => s.overview);
@@ -75,7 +74,7 @@ function PrototypeNotice({ overview }: { overview: AgriOverview }) {
   const unvalidated = overview.pest_thresholds_status !== "VERIFIED";
   const clauses = [
     "Prototype assessment",
-    overview.includes_sample_data && SHOW_LABELS ? "Synthetic pest reports" : null,
+    overview.includes_sample_data ? "Synthetic pest reports" : null,
     unvalidated ? "Unvalidated thresholds" : null,
   ].filter(Boolean);
   return (

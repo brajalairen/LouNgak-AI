@@ -1,8 +1,9 @@
 """Data contracts of field operations. Mirrored by hand in web/src/state/types.ts (tests/test_contract.py)."""
 
+from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 Role = Literal["farmer", "field_officer", "district_officer", "state_officer"]
 Priority = Literal["low", "moderate", "high", "urgent"]
@@ -95,9 +96,25 @@ class OutcomeCreate(BaseModel):
     action_taken: str | None = Field(default=None, max_length=500)
     follow_up: str | None = Field(default=None, max_length=500)
     public_summary: str = Field(min_length=3, max_length=500)  # what the reporter is told
-    gps_latitude: float | None = None
-    gps_longitude: float | None = None
-    gps_accuracy_m: float | None = None
+    gps_latitude: float | None = Field(default=None, ge=-90, le=90)
+    gps_longitude: float | None = Field(default=None, ge=-180, le=180)
+    gps_accuracy_m: float | None = Field(default=None, ge=0)
+
+    @model_validator(mode="after")
+    def _gps_is_a_pair(self):
+        if (self.gps_latitude is None) != (self.gps_longitude is None):
+            raise ValueError("GPS latitude and longitude must be given together.")
+        return self
+
+
+def _iso_date(value: str | None) -> str | None:
+    """A due date must be a calendar date (YYYY-MM-DD); it is stored as that text."""
+    if value is None or value == "":
+        return None
+    try:
+        return date.fromisoformat(value).isoformat()
+    except ValueError as error:
+        raise ValueError(f"'{value}' is not a date in the form YYYY-MM-DD.") from error
 
 
 class InspectionOutcome(OutcomeCreate):
@@ -116,10 +133,14 @@ class TaskCreate(BaseModel):
     assigned_to: str | None = None
     due_on: str | None = None  # ISO date
 
+    check_due_on = field_validator("due_on")(_iso_date)
+
 
 class TaskAssign(BaseModel):
     assigned_to: str
     due_on: str | None = None
+
+    check_due_on = field_validator("due_on")(_iso_date)
 
 
 class InspectionTask(BaseModel):

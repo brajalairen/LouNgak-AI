@@ -44,9 +44,9 @@ export function StateChip({ state, title }: { state: DataState; title?: string }
   );
 }
 
-/** The sample-data label, verbatim wherever synthetic pest reports appear. */
+/** The sample-data label, verbatim wherever synthetic pest reports appear. Shown in every mode, presentation
+ *  mode included (decision A): synthetic reports are never presented as a real feed. */
 export function SampleLabel({ text = "SAMPLE DATA — Prototype Simulation" }: { text?: string }) {
-  if (!SHOW_LABELS) return null;
   return (
     <span className="inline-flex items-center gap-1 rounded-[4px] border border-warn/50 bg-warn/10 px-1.5 py-px text-[10px] font-semibold tracking-wide text-warn uppercase">
       <FlaskConical className="h-3 w-3" strokeWidth={2} aria-hidden="true" />

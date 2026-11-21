@@ -143,10 +143,21 @@ class NdviConfig(Strict):
         return self
 
 
+class FieldReportWeights(Strict):
+    """What one field record adds to an area's report pressure (PLACEHOLDER with the rest of the model)."""
+
+    farmer_reported: float = 1.0        # a farmer's report, not yet confirmed or ruled out
+    concern_observed: float = 2.0       # an officer observed the concern on an inspection
+    concern_not_observed: float = -1.0  # an officer inspected and did not observe it (the total is floored at 0)
+
+
 class ReportConfig(Strict):
     lookback_days: int = Field(14, ge=1, le=90)
     severity_weights: dict[Literal["low", "moderate", "high"], float]
     weighted_count_for_full_score: float = Field(6.0, gt=0)
+    field_weights: FieldReportWeights = Field(default_factory=FieldReportWeights)
+    field_weighted_count_for_full_score: float = Field(3.0, gt=0)
+    field_categories: list[str] = Field(default_factory=lambda: ["pest", "disease"])
 
 
 class ConfidenceConfig(Strict):

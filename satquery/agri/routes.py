@@ -93,8 +93,8 @@ class AgriOverview(BaseModel):
     areas: list[AreaSummary]
     # Snapshot / district context
     mode: Literal["live", "snapshot"]
-    snapshot_saved_at: str | None  # set when a frozen snapshot is shown
-    fallback_reason: str | None    # why the snapshot is shown instead of live data
+    snapshot_saved_at: str | None  # set when a frozen snapshot is shown, whole or for some inputs
+    fallback_reason: str | None    # why: the whole snapshot (mode "snapshot") or the inputs it fills (mode "live")
     pest_thresholds_status: ThresholdStatus
     risk_weights_status: ThresholdStatus
     districts: list[DistrictSummary]

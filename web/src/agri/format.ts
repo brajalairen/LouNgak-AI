@@ -5,7 +5,6 @@
 
 import type { ExpressionSpecification } from "maplibre-gl";
 import type { AreaSummary, DataState, DistrictSummary, FactorId, RiskLevel } from "../state/types";
-import { SHOW_LABELS } from "../ui/presentation";
 
 /** Risk levels are states, so they use the fixed status palette (dataviz reference: good, warning,
  *  serious, critical), identical in light and dark. A level is never shown by colour alone: every
@@ -32,7 +31,7 @@ export const LEVELS: RiskLevel[] = ["CRITICAL", "HIGH", "MODERATE", "LOW", "INSU
 export const FACTOR_LABEL: Record<FactorId, string> = {
   weather_pest: "Weather",
   ndvi_anomaly: "NDVI vs baseline",
-  report_pressure: SHOW_LABELS ? "Pest reports (SAMPLE)" : "Pest reports",
+  report_pressure: "Pest reports",
 };
 
 /** Factor identity in the score breakdown: the first three categorical slots, validated all-pairs

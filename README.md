@@ -152,14 +152,15 @@ setting with its default.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `SATQUERY_VLM_BACKEND` | `fake` | `falcon` runs the vision-language model (needs the model extras); `fake` gives placeholder text for open-ended image questions. `.env.example` sets `falcon`: change it to `fake` if you did not install the model. |
+| `SATQUERY_VLM_BACKEND` | `fake` | `falcon` runs the vision-language model (needs the model extras); `fake` gives placeholder text for open-ended image questions. `python -m satquery.ops preflight` fails if `falcon` is set without PyTorch. |
+| `SATQUERY_AGRI_REPORTS` | `field` | The risk score's report factor: `field` counts the app's own farmer reports and inspection outcomes; `sample` switches back to the synthetic generator, labelled SAMPLE in every mode |
 | `COPERNICUS_CLIENT_ID`, `COPERNICUS_CLIENT_SECRET` | empty | Copernicus Data Space OAuth client, for live Sentinel-1/2 imagery and the NDVI factor |
 | `SATQUERY_DB_PATH` | `data/loungak.sqlite3` | SQLite file for reports, inspections and alert acknowledgements (gitignored) |
 | `SATQUERY_DEVICE` | `auto` | `auto`, `cuda` or `cpu` for the model |
 | `SATQUERY_FALCON_ADAPTER` | `adapters/falcon-bigearthnet-vqa-lora` | The included LoRA adapter; set it empty to run the base model |
 | `SATQUERY_AGRI_DISTRICTS` | empty | Path to a district-boundary GeoJSON, drawn as map context only (none is included; see [docs/geo/](docs/geo/district-boundaries-sources.md)) |
 | `SATQUERY_AGRI_PEST_RULES`, `SATQUERY_AGRI_RISK_MODEL` | the files in `satquery/agri/assets/` | Reviewed replacements for the placeholder pest rules and risk weights |
-| `SATQUERY_AGRI_MODE` | `live` | `live` (falls back to a saved snapshot when live data is incomplete) or `snapshot` |
+| `SATQUERY_AGRI_MODE` | `live` | `live` (an input that cannot be fetched live, such as NDVI, is taken from the saved snapshot and labelled SNAPSHOT; field reports always stay live) or `snapshot` (the whole saved snapshot) |
 | `SATQUERY_AGRI_OFFLINE` | off | `1` serves cached agricultural data only, with no network calls |
 | `SATQUERY_WEATHER` | `open-meteo` | `off` disables weather questions |
 
@@ -178,6 +179,35 @@ imagery questions about a drawn area explain that retrieval is not configured.
 
 Open **http://127.0.0.1:8000**. FastAPI serves the API and the built web client on this one port. The first risk
 assessment is computed in the background at start-up, so the dashboard and alerts fill in after a few seconds.
+After that, the assessment is refreshed in the background every 30 minutes, and at once after a farmer report or
+inspection outcome: pages are always served from the current assessment and never wait for a refresh.
+
+**Before a demo**, on the machine that will present:
+
+```powershell
+.venv\Scripts\python -m satquery.agri warm --save-snapshot --crop-health   # today's data + offline fallback
+.venv\Scripts\python -m satquery.ops seed-demo     # restore the DEMO scenario (safe to run again)
+.venv\Scripts\python -m satquery.ops preflight     # PASS / WARN / FAIL per check; fix every FAIL
+```
+
+`seed-demo` is idempotent: it replaces the two DEMO reports and the DEMO alert (valid for three days from the run)
+and clears a rehearsal's DEMO inspections, and it never touches other records. An alert past its validity, DEMO or
+not, is hidden. `preflight` checks that the Python packages and the app import, that `web/dist` is built, the
+image-question model setting against the installed packages, the Copernicus credentials (never printing them), the
+snapshot's age, that the database is writable, and the DEMO records. Restart the server after `reset`.
+
+**Windows and Smart App Control.** If Windows reports "An Application Control policy has blocked this file" for
+`.venv\Scripts\python.exe`, run the same commands through the base interpreter uv installed, with the project's
+packages added:
+
+```powershell
+$py = "$env:APPDATA\uv\python\cpython-3.12-windows-x86_64-none\python.exe"
+& $py -c "import site, sys, runpy; site.addsitedir('.venv/Lib/site-packages'); sys.path.insert(0, '.'); sys.argv = ['uvicorn', 'satquery.server:app', '--port', '8000']; runpy.run_module('uvicorn', run_name='__main__')"
+```
+
+Replace the module and arguments for other commands (for example `['satquery.ops', 'preflight']` with
+`run_module('satquery.ops', ...)`). Do not switch Smart App Control off for this: Windows cannot switch it back on
+without a reinstall.
 
 **Frontend development:** run the backend as above, then `npm run dev` in `web/` and open
 **http://localhost:5173**. Vite reloads on changes and forwards `/api` to port 8000.
@@ -190,9 +220,11 @@ assessment is computed in the background at start-up, so the dashboard and alert
 .venv\Scripts\python -m satquery.agri warm --save-snapshot --crop-health
 ```
 
-`warm` fetches today's data, saves it as the fallback snapshot (`runs/agri/snapshot.json`) used when live data is
-incomplete, and warms the crop-health imagery cache. Run it before a presentation so the dashboard never waits on
-a slow provider.
+`warm` fetches today's data, saves it as the fallback snapshot (`runs/agri/snapshot.json`), and warms the
+crop-health imagery cache. Later, any input that cannot be fetched live (NDVI when Copernicus is unreachable, for
+example) is taken from that snapshot and labelled SNAPSHOT, while everything available live, field reports
+included, stays live. If an input is missing when `warm` runs, it keeps the existing snapshot rather than freeze old
+data again. Run it before a presentation so the dashboard never waits on a slow provider.
 
 ## Tests and production build
 
@@ -236,10 +268,12 @@ without stopping the rest.
   until an agronomist verifies them, so their alerts are qualified watches. The heavy-rain categories follow IMD's
   terminology but are applied to model forecasts at one point per zone; they are not IMD warnings.
 - **No official warnings yet.** IMD, CWC and NDMA warnings are not integrated: always follow official warnings.
-- **Synthetic pest reports in the risk score.** No public, machine-readable pest or disease observation dataset for
-  Manipur was found ([docs/pest-data-sources.md](docs/pest-data-sources.md)), so the risk engine's report factor
-  uses generated reports labelled "SAMPLE DATA — Prototype Simulation". Farmer reports from the app are not yet fed
-  into the score.
+- **Pest reports come only from the app.** No public, machine-readable pest or disease observation dataset for
+  Manipur was found ([docs/pest-data-sources.md](docs/pest-data-sources.md)). The risk engine's report factor counts
+  the app's own pest and disease reports from the last 14 days inside a zone, weighted by their evidence (a farmer's
+  report +1, a concern an officer observed +2, an inspection that did not observe it −1; PLACEHOLDER weights), and
+  names each one by id. With few users, "no reports" is not evidence of no pests, and the factor says so. DEMO
+  records never count. The earlier synthetic generator remains behind `SATQUERY_AGRI_REPORTS=sample`.
 - **Demonstration zones and grid.** The seven monitored zones are hand-drawn rectangles, not administrative
   boundaries. Risk is scored per zone; a map cell shows its zone's level and is not scored on its own, and cells
   outside every zone are *not monitored* (not "no risk"). A report's district is the one the reporter chose.
@@ -248,8 +282,10 @@ without stopping the rest.
   are added. WorldCover under-counts hill shifting cultivation (jhum), which it often classes as shrub or grass.
 - **District outlines are OpenStreetMap reference outlines** (simplified about 30 m), not verified legal
   boundaries. Verified outlines replace them when configured (`SATQUERY_AGRI_DISTRICTS`).
-- **NDVI measures vegetation vigour**, not disease, over all clear land in a zone. Weather is model data for one
-  point per zone. Cloud often hides the valley in the monsoon, and then the NDVI factor is unavailable.
+- **NDVI measures vegetation vigour**, not disease, over all clear land in a zone. A value inside the range of the
+  same dates in earlier years is treated as ordinary variation (for example an earlier harvest) and is not scored.
+  Weather is model data for one point per zone. Cloud often hides the valley in the monsoon, and then the NDVI
+  factor is unavailable.
 - **Crop Atlas is DRAFT.** Not reviewed by an agronomist, KVK or the Department of Agriculture; regional details
   are marked *to verify* or *source needed*.
 - **Manipuri.** The answer templates were reviewed by a fluent speaker; the routing lexicon is still a draft.

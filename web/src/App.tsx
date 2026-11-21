@@ -7,6 +7,7 @@ import { applyTheme, useAppStore } from "./state/useAppStore";
 import { ToastHost } from "./ui/primitives";
 import { ErrorBoundary } from "./ui/ErrorBoundary";
 import { useAgriStore } from "./agri/useAgriStore";
+import { useLiveRefresh } from "./agri/useLiveRefresh";
 import { TopBar } from "./shell/AppShell";
 import { useSession, type Page } from "./shell/useSession";
 import { SituationMonitor } from "./pages/SituationMonitor";
@@ -41,6 +42,8 @@ export default function App() {
   useEffect(() => {
     void loadRisk();
   }, [loadRisk]);
+  // ...kept current after reports, outcomes and account switches, so the map and the drawer always agree.
+  useLiveRefresh();
 
   useEffect(() => {
     void loadUsers().catch(() => undefined);

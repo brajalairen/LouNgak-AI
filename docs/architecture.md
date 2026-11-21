@@ -16,7 +16,7 @@ diagrams have editable Mermaid sources next to them.
 |---|---|
 | 1 Ask or select | `web/src/command/AICommandBar.tsx`; `satquery/agent/language.py`, `satquery/agent/meitei_mayek.py`; monitored zones in `satquery/agri/assets/demo_areas.geojson` (7) |
 | 2 Interpret and route | `POST /api/route` in `satquery/server.py`; `satquery/agri/query.py` (`decide`); routes `agri` / `weather` / `imagery` / `mixed` |
-| 3 Gather evidence | `satquery/agri/pipeline.py` (`default_sources`, `assess_area`); `satquery/agri/weather.py` (Open-Meteo), `satquery/agri/ndvi.py` (Copernicus Sentinel-2), `satquery/agri/reports.py` (SAMPLE) |
+| 3 Gather evidence | `satquery/agri/pipeline.py` (`default_sources`, `assess_area`); `satquery/agri/weather.py` (Open-Meteo), `satquery/agri/ndvi.py` (Copernicus Sentinel-2), `satquery/agri/field_reports.py` (the app's farmer reports and inspection outcomes; `reports.py` is the SAMPLE generator, off by default) |
 | 4 Assess the risk | `satquery/agri/risk.py` (`weather_factor`, `ndvi_factor`, `report_factor`, `combine`); weights in `satquery/agri/assets/risk_model.json`, pest rules in `satquery/agri/assets/pest_rules.json` |
 | 5 Show and explain | `satquery/agri/routes.py` (`/api/agri/*`); `web/src/agri/` (`RiskLayer` zone outlines and ranks, `PriorityPanel`, `AreaRiskDrawer`) |
 | Imagery questions | `satquery/agent/` (intent, plan, execution, aggregation), `satquery/specialists/` (VLM, analysis tools, weather), `satquery/providers/copernicus.py` (Sentinel-1/2 retrieval), `satquery/raster_analysis.py` |
@@ -34,8 +34,19 @@ be replaced by reviewed copies (`SATQUERY_AGRI_RISK_MODEL`, `SATQUERY_AGRI_PEST_
 
 - Weights: weather-pest rules 0.5, NDVI anomaly 0.3, pest-report pressure 0.2.
 - Weather: 14 days of hourly history plus a 7-day forecast (including today) for one point per zone.
-- NDVI: a 30-day window compared with the same window in up to 3 earlier years.
-- Pest reports: a 14-day look-back.
+- NDVI: a 30-day window compared with the same window in up to 3 earlier years. A value inside the range of those
+  years scores 0 (ordinary variation, such as an earlier harvest).
+- Pest reports: the app's pest and disease reports inside the zone over a 14-day look-back, weighted by evidence: a
+  farmer's report +1, a concern an officer observed +2, an inspection that did not observe it −1 (total floored at
+  0; 3 gives full pressure). Dismissed reports, other categories and DEMO records do not count.
+- Refresh: the assessment is reused for 30 minutes, then recomputed in one background thread while the previous
+  one is served; a new report or inspection outcome starts that recompute at once. The web client re-fetches the
+  overview and the open drawer 1.5 s and 5 s after any change (report, outcome, account switch) and every minute
+  while the page is visible (`web/src/agri/useLiveRefresh.ts`).
+- Snapshot fallback: an input that cannot be fetched live (weather or NDVI) is taken from the saved snapshot,
+  labelled SNAPSHOT, and the zone is re-scored (`fill_from_snapshot` in `satquery/agri/service.py`). Inputs that
+  are available live, and field reports always, stay live. The whole snapshot is served only in snapshot mode or
+  when the live assessment fails outright.
 - Levels: CRITICAL at a score of 0.80 or more when at least 2 factors score 0.60 or more and data completeness
   is at least 90% (otherwise such a score is HIGH); HIGH at 0.60; MODERATE at 0.35; LOW below. Below 50%
   completeness the level is INSUFFICIENT_DATA.
@@ -48,8 +59,8 @@ be replaced by reviewed copies (`SATQUERY_AGRI_RISK_MODEL`, `SATQUERY_AGRI_PEST_
 
 - **A trained pest or disease detection model.** Pest risk is inferred from weather rules, NDVI change and
   reports.
-- **Real pest/disease surveillance data.** No public machine-readable observation dataset for Manipur was found
-  (see [pest-data-sources.md](pest-data-sources.md)), so pest reports are SAMPLE: synthetic and labelled.
+- **External pest/disease surveillance data.** No public machine-readable observation dataset for Manipur was found
+  (see [pest-data-sources.md](pest-data-sources.md)), so the report factor counts only reports made in the app.
 - **Verified agronomic thresholds.** The pest rules and risk weights are PLACEHOLDER until an agronomist reviews
   them.
 - **Verified district boundaries.** The map ships OpenStreetMap reference outlines; Survey of India outlines load
@@ -63,5 +74,5 @@ be replaced by reviewed copies (`SATQUERY_AGRI_RISK_MODEL`, `SATQUERY_AGRI_PEST_
 - **Conversation and voice mode.** Not part of the application; a design note for adding it later is kept on the
   `future/conversation-voice-stub` branch.
 - **Real authentication.** Demo accounts are switched freely; the server enforces their role and jurisdiction.
-- **Official warning ingestion** (IMD, CWC, NDMA), per-cell risk analysis (cells show their zone's level), and
-  farmer reports feeding the risk score. See [Context/refined_foundation.md](../Context/refined_foundation.md).
+- **Official warning ingestion** (IMD, CWC, NDMA) and per-cell risk analysis (cells show their zone's level). See
+  [Context/refined_foundation.md](../Context/refined_foundation.md).

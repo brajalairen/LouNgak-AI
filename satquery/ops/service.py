@@ -9,6 +9,7 @@ farmer sees only their own reports and never the officers' internal notes.
 """
 
 from datetime import datetime, timezone
+from typing import Callable
 
 from fastapi import HTTPException
 
@@ -19,8 +20,8 @@ from satquery.ops.models import (DemoUser, FarmerReport, InspectionOutcome, Insp
                                  TaskCreate, ZoneSituation)
 from satquery.ops.users import OFFICER_ROLES, USERS, covers
 from satquery.store import Store, now_iso
-from satquery.watch.alerts import (CATEGORY_LABEL, PRIORITY_ORDER, Alert, AlertState, WatchOverview, derive,
-                                   load_rules, sort_alerts)
+from satquery.watch.alerts import (CATEGORY_LABEL, MANIPUR_TZ, PRIORITY_ORDER, Alert, AlertEpisode, AlertState,
+                                   WatchOverview, derive, is_expired, load_rules, sort_alerts, with_episodes)
 
 DISTRICT_NAMES_NOTE = "District as stated by the reporter (district boundaries are not loaded)."
 CATEGORY_TO_ALERT = {"pest": "pest", "disease": "disease", "crop_damage": "crop_health", "waterlogging": "weather",
@@ -47,30 +48,48 @@ def for_reporter(report: FarmerReport) -> FarmerReport:
 
 
 class OpsService:
-    def __init__(self, store: Store, agri: AssessmentService, rules: dict | None = None):
+    def __init__(self, store: Store, agri: AssessmentService, rules: dict | None = None,
+                 now: Callable[[], datetime] | None = None):
         self.store = store
         self.agri = agri
         self.rules = rules or load_rules()
+        self.now = now or (lambda: datetime.now(timezone.utc))
 
     # ------------------------------------------------------------------ alerts (LouNgak Watch)
 
     def alerts(self) -> tuple[list[Alert], WatchOverview]:
         notes, mode, computed = [], "live", now_iso()
+        now = self.now()
         try:
             snapshot = self.agri.snapshot()
-            derived = derive(snapshot.areas, snapshot.assessments, self.rules)
+            derived = derive(snapshot.areas, snapshot.assessments, self.rules, now=now)
             mode, computed = snapshot.mode, snapshot.computed_at
             if snapshot.mode == "snapshot":
                 notes.append(f"Derived from a frozen snapshot saved {snapshot.snapshot_saved_at}, not live data.")
+            elif snapshot.fallback_reason:
+                notes.append(snapshot.fallback_reason)
         except AgriUnavailable as error:
             derived = []
             notes.append(f"The risk assessment is unavailable, so no alerts could be derived: {error}")
+        episodes = {e.id: e for e in self.store.all("alert_episode", AlertEpisode)}
+        derived, changed = with_episodes(derived, episodes, now.astimezone(MANIPUR_TZ).date())
+        for episode in changed:
+            self.store.put("alert_episode", episode.id, episode)
         demo = self.store.all("demo_alert", Alert)
-        if demo:
-            notes.append(f"{len(demo)} DEMO alert(s) are shown for demonstration and labelled as such.")
+        expired = [a for a in derived + demo if is_expired(a, now)]
+        if expired:
+            demo_expired = sum(1 for a in expired if a.is_demo)
+            notes.append(f"{len(expired)} alert(s) past their validity are hidden"
+                         + (f", {demo_expired} of them DEMO (run `python -m satquery.ops seed-demo` to refresh)."
+                            if demo_expired else "."))
+        live_demo = [a for a in demo if not is_expired(a, now)]
+        if live_demo:
+            notes.append(f"{len(live_demo)} DEMO alert(s) are shown for demonstration and labelled as such.")
         states = {s.id: s for s in self.store.all("alert_state", AlertState)}
         alerts = []
         for alert in derived + demo:
+            if is_expired(alert, now):
+                continue
             state = states.get(alert.id)
             if state:
                 alert = alert.model_copy(update={"status": "acknowledged", "acknowledged_by": state.acknowledged_by_name,
@@ -108,15 +127,19 @@ class OpsService:
         if not body.consent:
             raise HTTPException(status_code=422, detail="The report needs consent to use its location and description.")
         zone = grid.zone_for(body.latitude, body.longitude, self.agri.areas())
-        report = FarmerReport(
-            id=self.store.next_id("report", "RPT"), category=body.category, crop=body.crop,
+        report = self.store.insert_new("report", "RPT", lambda report_id: FarmerReport(
+            id=report_id, category=body.category, crop=body.crop,
             growth_stage=body.growth_stage, description=body.description.strip(), latitude=body.latitude,
             longitude=body.longitude, location_source=body.location_source, district=body.district,
             h3_cell=grid.cell_for(body.latitude, body.longitude), zone_id=zone.id if zone else None,
             reporter_id=user.id, reporter_name=user.name, submitted_at=now_iso(),
-            history=[_change(user, "SUBMITTED", "Report received. It is unverified until an officer reviews it.")])
-        self.store.put("report", report.id, report)
+            history=[_change(user, "SUBMITTED", "Report received. It is unverified until an officer reviews it.")]))
+        self._field_evidence_changed()
         return report
+
+    def _field_evidence_changed(self) -> None:
+        """A report or an inspection outcome changed what the zones' report factor counts: recompute."""
+        self.agri.invalidate()
 
     def _report(self, report_id: str) -> FarmerReport:
         report = self.store.get("report", report_id, FarmerReport)
@@ -152,6 +175,8 @@ class OpsService:
             update["history"] = report.history + [_change(user, "DISMISSED", action.public_note)]
         report = report.model_copy(update=update)
         self.store.put("report", report.id, report)
+        if update.get("status") == "DISMISSED":
+            self._field_evidence_changed()
         return report
 
     # ------------------------------------------------------------------ review queue
@@ -210,33 +235,62 @@ class OpsService:
             raise HTTPException(status_code=422, detail=f"{assignee.name} does not cover {district}.")
         return assignee
 
+    def _check_taskable(self, user: DemoUser, reports: list[FarmerReport], alerts: list[Alert]) -> None:
+        """Every report and alert in a new task must be inside the officer's jurisdiction, in one district,
+        still open, and not already part of another open inspection. Checking only the first item would let
+        an officer take over another district's report, or pull a closed report back into review."""
+        open_tasks = [t for t in self.store.all("task", InspectionTask) if t.status in OPEN_TASK]
+        tasked_reports = {i: t.id for t in open_tasks for i in t.report_ids}
+        tasked_alerts = {i: t.id for t in open_tasks for i in t.alert_ids}
+        for alert in alerts:
+            if alert.district is None:
+                raise HTTPException(status_code=422, detail=f"Alert {alert.id} has no district to route a task to.")
+        districts = {r.district for r in reports} | {a.district for a in alerts}
+        for district in sorted(districts):
+            if not covers(user, district):
+                raise _forbidden(f"{district} is outside your jurisdiction.")
+        if len(districts) > 1:
+            raise HTTPException(status_code=422, detail="One inspection covers one district; these items are in "
+                                                        f"{', '.join(sorted(districts))}.")
+        if len({item.is_demo for item in [*reports, *alerts]}) > 1:
+            raise HTTPException(status_code=422, detail="DEMO records and real records cannot share an inspection.")
+        for r in reports:
+            if r.status not in ("SUBMITTED", "UNDER_REVIEW"):
+                raise HTTPException(status_code=409, detail=f"Report {r.id} is {r.status} and cannot be re-tasked.")
+            if r.id in tasked_reports:
+                raise HTTPException(status_code=409, detail=f"Report {r.id} is already in inspection "
+                                                            f"{tasked_reports[r.id]}.")
+        for a in alerts:
+            if a.id in tasked_alerts:
+                raise HTTPException(status_code=409, detail=f"Alert {a.id} is already in inspection "
+                                                            f"{tasked_alerts[a.id]}.")
+
     def create_task(self, user: DemoUser, body: TaskCreate) -> InspectionTask:
         if user.role not in OFFICER_ROLES:
             raise _forbidden("Only district and state-level officers create inspection tasks.")
         if not body.report_ids and not body.alert_ids:
             raise HTTPException(status_code=422, detail="An inspection task needs at least one report or alert.")
-        reports = [self._report(i) for i in body.report_ids]
-        alerts = [self.alert(i) for i in body.alert_ids]
+        report_ids, alert_ids = list(dict.fromkeys(body.report_ids)), list(dict.fromkeys(body.alert_ids))
+        reports = [self._report(i) for i in report_ids]
+        alerts = [self.alert(i) for i in alert_ids]
+        self._check_taskable(user, reports, alerts)
         if reports:
             anchor = reports[0]
             latitude, longitude, district, zone_id, crop = (anchor.latitude, anchor.longitude, anchor.district,
                                                             anchor.zone_id, anchor.crop)
         else:
             anchor = alerts[0]
-            if anchor.district is None:
-                raise HTTPException(status_code=422, detail="The alert has no district to route the task to.")
             longitude, latitude = anchor.label_point
             district, zone_id, crop = anchor.district, anchor.zone_id, "unknown"
-        if not covers(user, district):
-            raise _forbidden(f"{district} is outside your jurisdiction.")
-        task = InspectionTask(
-            id=self.store.next_id("task", "INS"), report_ids=body.report_ids, alert_ids=body.alert_ids,
+        if body.assigned_to:  # before anything is stored, so a wrong assignee leaves no orphan task behind
+            self._check_assignee(user, body.assigned_to, district)
+        task = self.store.insert_new("task", "INS", lambda task_id: InspectionTask(
+            id=task_id, report_ids=report_ids, alert_ids=alert_ids,
             latitude=latitude, longitude=longitude, h3_cell=grid.cell_for(latitude, longitude), district=district,
             zone_id=zone_id, crop=crop, reason=body.reason.strip(), priority=body.priority,
             priority_rationale=body.priority_rationale, created_by=user.id, created_at=now_iso(),
             history=[_change(user, "NEW", "Inspection approved.")],
-            is_demo=any(r.is_demo for r in reports) or any(a.is_demo for a in alerts))
-        self.store.put("task", task.id, task)
+            is_demo=any(r.is_demo for r in reports) or any(a.is_demo for a in alerts)))
         for report in reports:
             report = report.model_copy(update={
                 "status": "UNDER_REVIEW", "task_id": task.id,
@@ -307,6 +361,7 @@ class OpsService:
                                                     "This is an officer's field observation, not a laboratory "
                                                     "diagnosis.")]})
             self.store.put("report", report.id, report)
+        self._field_evidence_changed()
         return task
 
     # ------------------------------------------------------------------ combined situation

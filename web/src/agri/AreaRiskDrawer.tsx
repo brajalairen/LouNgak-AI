@@ -28,7 +28,6 @@ import {
 } from "./format";
 import { useAgriStore } from "./useAgriStore";
 import { useAppStore } from "../state/useAppStore";
-import { SHOW_LABELS } from "../ui/presentation";
 
 export function AreaRiskDrawer() {
   const selectedId = useAgriStore((s) => s.selectedId);
@@ -154,7 +153,7 @@ function Content({ detail }: { detail: AgriAreaDetail }) {
         )}
       </Block>
 
-      <Block title="Recent pest reports">
+      <Block title="Recent pest and disease reports">
         <ReportsSection factor={reports} label={detail.sample_label} />
       </Block>
 
@@ -461,7 +460,7 @@ function ReportsSection({ factor, label }: { factor?: FactorResult; label: strin
   const reports: PestReport[] = factor.details.reports ?? [];
   return (
     <div className="flex flex-col gap-2">
-      {factor.sample_data && SHOW_LABELS && (
+      {factor.sample_data && (
         <p className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
           <SampleLabel text={label} /> Synthetic reports, not real field observations.
         </p>
@@ -469,16 +468,40 @@ function ReportsSection({ factor, label }: { factor?: FactorResult; label: strin
       <p className="text-[12px] text-ink">{factor.summary}.</p>
       {reports.length > 0 && (
         <ul className="flex flex-col divide-y divide-line text-[11px]">
-          {reports.map((r) => (
-            <li key={r.id} className="flex items-center gap-2 py-1">
-              <span className="w-[74px] shrink-0 text-muted tabular-nums">{r.observed_on}</span>
-              <span className="flex-1 text-ink capitalize">{pestName(r.pest)}</span>
-              <span className="text-muted">{r.severity}</span>
-              {SHOW_LABELS && <span className="rounded-[4px] border border-warn/50 px-1 text-[9px] font-semibold text-warn">SAMPLE</span>}
-            </li>
-          ))}
+          {reports.map((r) =>
+            r.source === "FIELD" ? (
+              <li key={r.id} className="flex items-center gap-2 py-1">
+                <span className="w-[74px] shrink-0 text-muted tabular-nums">{r.observed_on}</span>
+                <span className="shrink-0 font-medium text-ink tabular-nums">{r.id}</span>
+                <span className="flex-1 text-ink">
+                  <span className="capitalize">{pestName(r.pest)}</span>
+                  <span className="text-muted"> · {EVIDENCE_LABEL[r.evidence ?? ""] ?? r.evidence}</span>
+                </span>
+                {r.weight !== null && (
+                  <span className="text-muted tabular-nums" title="What this record adds to the weighted count">
+                    {r.weight > 0 ? "+" : r.weight < 0 ? "−" : ""}
+                    {Math.abs(r.weight)}
+                  </span>
+                )}
+              </li>
+            ) : (
+              <li key={r.id} className="flex items-center gap-2 py-1">
+                <span className="w-[74px] shrink-0 text-muted tabular-nums">{r.observed_on}</span>
+                <span className="flex-1 text-ink capitalize">{pestName(r.pest)}</span>
+                <span className="text-muted">{r.severity}</span>
+                <span className="rounded-[4px] border border-warn/50 px-1 text-[9px] font-semibold text-warn">SAMPLE</span>
+              </li>
+            ),
+          )}
         </ul>
       )}
     </div>
   );
 }
+
+/** Field-record evidence in words; an officer's observation is not a laboratory diagnosis. */
+const EVIDENCE_LABEL: Record<string, string> = {
+  farmer_reported: "farmer-reported, unverified",
+  concern_observed: "concern observed by a field officer",
+  concern_not_observed: "inspected, concern not observed",
+};
