@@ -8,6 +8,20 @@ covers the problems, and section 5 is the step-by-step plan. The demo is on **22
 Review steps 0, 1, 2, 3, 5 and 6a are done, with the backend at 883 passed and the frontend at 127 passed. See
 `PROGRESS.md` for what each step changed. The branch is not pushed.
 
+## Done on 19 Nov 2026 (verified on Windows and committed 21 Nov 2026)
+
+Two demo bugs fixed (decisions I and J; details in `PROGRESS.md`). On Windows, 21 Nov: backend 885 passed,
+3 skipped; frontend 134 passed, typecheck clean, build OK. The branch was pushed the same day. To re-run the suites
+with Smart App Control on, run pytest through the base interpreter:
+
+```powershell
+$py = "$env:APPDATA\uv\python\cpython-3.12-windows-x86_64-none\python.exe"
+& $py -c "import site, sys, runpy; site.addsitedir('.venv/Lib/site-packages'); sys.path.insert(0, '.'); sys.argv = ['pytest']; runpy.run_module('pytest', run_name='__main__')"
+cd web; npm test; npm run typecheck; npm run build; cd ..
+```
+
+Commit with Windows git: it converts line endings, whereas a Linux git would rewrite every line.
+
 ## Before the demo (22 Nov), on the presenting machine
 
 1. `python -m satquery.agri warm --save-snapshot --crop-health`: today's data, plus the offline fallback. This uses
@@ -40,8 +54,7 @@ the honest result, so say so. Waterlogging reports do not count towards pest pre
 
 ## Open questions for the user
 
-1. **Push:** push `feat/stage2-hardening` to GitHub, and fast-forward `main`? Run the push checklist in
-   `Context/progress.md` first.
+1. **`main`:** `feat/stage2-hardening` was pushed on 21 Nov 2026. Fast-forward `main` to it as well?
 2. **Team task split:** who rehearses, which machine presents, and who updates the video narration?
 3. **Copernicus credentials:** rotate them before the demo? `Context/refined_foundation.md` section 12 has the
    history.

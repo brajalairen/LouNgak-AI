@@ -1,21 +1,24 @@
 # PROGRESS: current state
 
-**As of:** 18 Nov 2026. State-level demo on **22 Nov 2026**.
+**As of:** 21 Nov 2026. State-level demo on **22 Nov 2026**.
 
 This file is the current state. `Context/progress.md` is the older session log up to 31 Oct 2026 and has not been
 updated since. Use it for history only.
 
 ## Where the code is
 
-- **Branch:** `feat/stage2-hardening`, branched from `feat/agri-map` (`156eec2`). Not pushed.
+- **Branch:** `feat/stage2-hardening`, branched from `feat/agri-map` (`156eec2`). Pushed to GitHub on 21 Nov 2026.
 - **Committed:** the 18 Nov work below is one commit on that branch (19 Nov 2026, at the user's request: "feat: demo
-  hardening and field reports drive the risk score").
-- **Review:** `docs/REVIEW-2026-11-17.md`. Decisions so far: `docs/decisions.md` (A to H).
+  hardening and field reports drive the risk score"). The 19 Nov work was verified on Windows and committed on
+  21 Nov 2026 as three commits (decision I, decision J, docs).
+- **Review:** `docs/REVIEW-2026-11-17.md`. Decisions so far: `docs/decisions.md` (A to J).
 
 ## Verification status
 
 | Check | Result | When |
 |---|---|---|
+| Backend tests (`pytest`), after the 19 Nov fixes, on Windows | **885 passed, 3 skipped** (live and GPU tests deselected) | 21 Nov 2026 |
+| Frontend, after the 19 Nov fixes, on Windows | **134 passed**, typecheck clean, build OK | 21 Nov 2026 |
 | Backend tests (`pytest`) | **883 passed, 3 skipped** (live and GPU tests deselected). Baseline before the work: 852 passed, 3 skipped | 18 Nov 2026 |
 | Frontend (`npm test`, typecheck, build) | **127 passed**, typecheck clean, build OK. Baseline: 126 passed, clean, OK | 18 Nov 2026 |
 | Threaded tests repeated 8 times | 38 of 38 passed every run (refresh, alert lifecycle, field reports, ops) | 18 Nov 2026 |
@@ -33,6 +36,25 @@ The end-to-end run on the real server, in the Bishnupur zone, in dry November we
 **This laptop:** Windows Smart App Control blocks `.venv\Scripts\python.exe` ("An Application Control policy has
 blocked this file"). Run Python through the base uv interpreter instead: the README section "Windows and Smart App
 Control" gives the command, and it was tested on 18 Nov. Do not switch Smart App Control off.
+
+## What changed on 19 Nov 2026 (committed 21 Nov 2026)
+
+1. **Field reports stay live when the snapshot is in use (decision I).** The fallback is now per input:
+   weather or NDVI that cannot be fetched live comes from the saved snapshot, labelled SNAPSHOT, and the zone is
+   re-scored. Before, the whole snapshot replaced the live assessment, so a farmer's report did not move the score
+   while Copernicus was unreachable. `warm --save-snapshot` no longer freezes a partly filled assessment. The map's
+   layers panel says when some inputs come from the snapshot.
+2. **The map and the priority panel refresh after a report or outcome (decision J).** The overview, and the open
+   drawer, are re-fetched 1.5 s and 5 s after any change and every minute while the page is visible.
+
+Verification, 19 Nov, in a Linux workspace (the Windows `.venv` and `node_modules` cannot run there):
+- Backend: the full suite ran with the compiled packages that could not be installed there (h3, rasterio) stubbed
+  for import, so tests that need them fail in both runs. Under identical conditions: 629 passed before, 631 after
+  (2 new tests), **no test newly failing**. With the web sources present the contract tests also ran: 695 passed.
+  The new field-report test fails on the old code (the score stays 60.0 after a report) and passes on the new.
+- Frontend: typecheck clean. The new store logic was run in a small Node harness (6 of 6 scenarios pass).
+  `npm test` and `npm run build` could not run there. They were run on Windows on 21 Nov, together with the full
+  backend suite (see the table above).
 
 ## What changed on 18 Nov 2026
 
@@ -75,4 +97,4 @@ Control" gives the command, and it was tested on 18 Nov. Do not switch Smart App
 
 ## Next
 
-See `HANDOFF.md`: commit the work, run the pre-demo routine, then do a browser rehearsal.
+See `HANDOFF.md`: run the pre-demo routine, then do a browser rehearsal.

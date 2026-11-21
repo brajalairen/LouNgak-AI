@@ -160,7 +160,7 @@ setting with its default.
 | `SATQUERY_FALCON_ADAPTER` | `adapters/falcon-bigearthnet-vqa-lora` | The included LoRA adapter; set it empty to run the base model |
 | `SATQUERY_AGRI_DISTRICTS` | empty | Path to a district-boundary GeoJSON, drawn as map context only (none is included; see [docs/geo/](docs/geo/district-boundaries-sources.md)) |
 | `SATQUERY_AGRI_PEST_RULES`, `SATQUERY_AGRI_RISK_MODEL` | the files in `satquery/agri/assets/` | Reviewed replacements for the placeholder pest rules and risk weights |
-| `SATQUERY_AGRI_MODE` | `live` | `live` (falls back to a saved snapshot when live data is incomplete) or `snapshot` |
+| `SATQUERY_AGRI_MODE` | `live` | `live` (an input that cannot be fetched live, such as NDVI, is taken from the saved snapshot and labelled SNAPSHOT; field reports always stay live) or `snapshot` (the whole saved snapshot) |
 | `SATQUERY_AGRI_OFFLINE` | off | `1` serves cached agricultural data only, with no network calls |
 | `SATQUERY_WEATHER` | `open-meteo` | `off` disables weather questions |
 
@@ -220,9 +220,11 @@ without a reinstall.
 .venv\Scripts\python -m satquery.agri warm --save-snapshot --crop-health
 ```
 
-`warm` fetches today's data, saves it as the fallback snapshot (`runs/agri/snapshot.json`) used when live data is
-incomplete, and warms the crop-health imagery cache. Run it before a presentation so the dashboard never waits on
-a slow provider.
+`warm` fetches today's data, saves it as the fallback snapshot (`runs/agri/snapshot.json`), and warms the
+crop-health imagery cache. Later, any input that cannot be fetched live (NDVI when Copernicus is unreachable, for
+example) is taken from that snapshot and labelled SNAPSHOT, while everything available live, field reports
+included, stays live. If an input is missing when `warm` runs, it keeps the existing snapshot rather than freeze old
+data again. Run it before a presentation so the dashboard never waits on a slow provider.
 
 ## Tests and production build
 

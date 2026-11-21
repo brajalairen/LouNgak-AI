@@ -3,6 +3,30 @@
 Newest first. Each entry gives the date, the decision, and why. Older decisions (31 Oct 2026) are in
 `Context/progress.md` and `Context/refined_foundation.md` section 10.
 
+## 19 Nov 2026
+
+### I. The snapshot fills missing inputs; it never replaces live field reports
+
+Before, when live data was more than 5% less complete than the saved snapshot (for example NDVI unreachable at the
+venue), the whole snapshot was served, so a new farmer report or inspection outcome did not change the score until
+the network came back. Now only the inputs that are unavailable live (weather, NDVI) are taken from the snapshot,
+labelled SNAPSHOT, and the zone is re-scored. Field reports always come from the app's own database. The whole
+snapshot is still served in snapshot mode or when the live assessment fails outright. `save_snapshot` and
+`warm --save-snapshot` refuse to freeze an assessment with filled inputs, so old data never rolls forward under a
+new date.
+
+**Why.** The live demo moment (a report raises the zone's score) must work exactly when the network is poor, which
+is when the snapshot is in use.
+
+### J. The web client refreshes the risk overview after every change
+
+The overview was fetched once when the app started, so after a report the priority panel and the map's zone
+colours kept the old score while the drawer showed the new one. The client now re-fetches the overview and the
+open drawer 1.5 s and 5 s after any session change (report, outcome, account switch), and every minute while the
+page is visible, with no loading state; a failed refresh keeps what is shown.
+
+**Why.** The map and the drawer must never disagree in front of judges.
+
 ## 18 Nov 2026
 
 ### D. Decision A is implemented as the real feed: field reports drive the score

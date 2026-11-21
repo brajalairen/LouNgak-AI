@@ -40,7 +40,13 @@ be replaced by reviewed copies (`SATQUERY_AGRI_RISK_MODEL`, `SATQUERY_AGRI_PEST_
   farmer's report +1, a concern an officer observed +2, an inspection that did not observe it −1 (total floored at
   0; 3 gives full pressure). Dismissed reports, other categories and DEMO records do not count.
 - Refresh: the assessment is reused for 30 minutes, then recomputed in one background thread while the previous
-  one is served; a new report or inspection outcome starts that recompute at once.
+  one is served; a new report or inspection outcome starts that recompute at once. The web client re-fetches the
+  overview and the open drawer 1.5 s and 5 s after any change (report, outcome, account switch) and every minute
+  while the page is visible (`web/src/agri/useLiveRefresh.ts`).
+- Snapshot fallback: an input that cannot be fetched live (weather or NDVI) is taken from the saved snapshot,
+  labelled SNAPSHOT, and the zone is re-scored (`fill_from_snapshot` in `satquery/agri/service.py`). Inputs that
+  are available live, and field reports always, stay live. The whole snapshot is served only in snapshot mode or
+  when the live assessment fails outright.
 - Levels: CRITICAL at a score of 0.80 or more when at least 2 factors score 0.60 or more and data completeness
   is at least 90% (otherwise such a score is HIGH); HIGH at 0.60; MODERATE at 0.35; LOW below. Below 50%
   completeness the level is INSUFFICIENT_DATA.
