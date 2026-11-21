@@ -12,6 +12,7 @@ import { basemapStyle, INITIAL_VIEW } from "../map/basemap";
 import { Button, Field } from "../ui/primitives";
 import { useSession } from "../shell/useSession";
 import { Card, CATEGORY_LABEL, CROP_LABEL, DISTRICTS, ErrorLine, errorText, fieldClass, Notice, PageBody } from "../ops/ui";
+import { GrowthStageSelect } from "../ops/GrowthStageSelect";
 
 export function ReportPage() {
   const user = useSession((s) => s.user);
@@ -19,7 +20,7 @@ export function ReportPage() {
   const changed = useSession((s) => s.changed);
   const [category, setCategory] = useState<ReportCategory>("pest");
   const [crop, setCrop] = useState<CropId>("rice");
-  const [stage, setStage] = useState("");
+  const [stage, setStage] = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [district, setDistrict] = useState<string>(user?.districts[0] ?? "Bishnupur");
   const [point, setPoint] = useState<{ lat: number; lon: number; source: "map_pin" | "device_gps" } | null>(null);
@@ -42,7 +43,7 @@ export function ReportPage() {
     setError(null);
     try {
       const report = await api.createReport({
-        category, crop, growth_stage: stage.trim() || null, description, latitude: point.lat, longitude: point.lon,
+        category, crop, growth_stage: stage?.trim() || null, description, latitude: point.lat, longitude: point.lon,
         location_source: point.source, district, consent,
       });
       setSent(report);
@@ -82,12 +83,12 @@ export function ReportPage() {
         </Field>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Crop">
-            <select className={fieldClass} value={crop} onChange={(e) => setCrop(e.target.value as CropId)}>
+            <select className={fieldClass} value={crop} onChange={(e) => { setCrop(e.target.value as CropId); setStage(null); }}>
               {Object.entries(CROP_LABEL).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
             </select>
           </Field>
           <Field label="Growth stage (if known)">
-            <input className={fieldClass} placeholder="e.g. flowering, harvest" value={stage} onChange={(e) => setStage(e.target.value)} />
+            <GrowthStageSelect key={crop} crop={crop} audience="farmer" value={stage} onChange={setStage} />
           </Field>
         </div>
         <Field label="Describe what you see">

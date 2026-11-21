@@ -3,6 +3,7 @@
  *  per-zone summary. The system suggests an order; the officer decides, and every decision is recorded. */
 
 import { useState } from "react";
+import { Satellite, User } from "lucide-react";
 import { api } from "../state/api";
 import { SHOW_LABELS } from "../ui/presentation";
 import type { FarmerReport, InspectionTask, QueueItem } from "../state/types";
@@ -10,7 +11,7 @@ import { Button, Segmented } from "../ui/primitives";
 import { useSession } from "../shell/useSession";
 import { TaskDialog, type TaskTarget } from "../ops/TaskDialog";
 import {
-  Card, Chip, CATEGORY_LABEL, CROP_LABEL, DemoChip, ErrorLine, errorText, EvidenceChip, fieldClass, Notice,
+  Card, Chip, CATEGORY_LABEL, CROP_LABEL, DemoChip, DueChip, ErrorLine, errorText, EvidenceChip, fieldClass, Notice,
   OUTCOME_LABEL, PageBody, PriorityChip, REPORT_STATUS_LABEL, TASK_STATUS_LABEL, useLoad, when,
 } from "../ops/ui";
 
@@ -73,21 +74,62 @@ export function FieldOpsPage() {
   );
 }
 
+type QueueFilter = "all" | QueueItem["kind"];
+
+/** Where a queue item came from, marked lightly: a thin coloured edge on the card and an icon chip,
+ *  in the field-report and weather factor colours so they never read as a priority. */
+const SOURCE: Record<QueueItem["kind"], { label: string; edge: string; chip: string; Icon: typeof User }> = {
+  report: {
+    label: "Farmer report", Icon: User,
+    edge: "border-l-[3px] border-l-[color:var(--factor-reports)]",
+    chip: "border-[color:var(--factor-reports)] text-[color:var(--factor-reports)]",
+  },
+  alert: {
+    label: "System alert", Icon: Satellite,
+    edge: "border-l-[3px] border-l-[color:var(--factor-weather)]",
+    chip: "border-[color:var(--factor-weather)] text-[color:var(--factor-weather)]",
+  },
+};
+
 function Queue({ items, error }: { items: QueueItem[] | null; error: string | null }) {
   const [task, setTask] = useState<TaskTarget | null>(null);
   const [dismissing, setDismissing] = useState<string | null>(null);
+  const [filter, setFilter] = useState<QueueFilter>("all");
   if (error) return <ErrorLine error={error} />;
   if (!items) return <p className="text-[13px] text-muted">Loading the queue…</p>;
   if (!items.length) return <Card><p className="text-[13px] text-muted">Nothing awaits review in your jurisdiction.</p></Card>;
+  // One ranked queue: the filter narrows the view, and each item keeps its rank in the whole queue.
+  const ranked = items.map((item, index) => ({ item, rank: index + 1 })).filter(({ item }) => filter === "all" || item.kind === filter);
+  const count = (kind: QueueItem["kind"]) => items.filter((i) => i.kind === kind).length;
   return (
     <>
-      {items.map((item, index) => (
-        <Card key={`${item.kind}-${item.id}`}>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[11px] font-medium tracking-wide text-muted uppercase">Show</span>
+        <Segmented<QueueFilter>
+          value={filter}
+          onChange={setFilter}
+          options={[
+            { value: "all", label: `All · ${items.length}` },
+            { value: "report", label: `Farmer reports · ${count("report")}` },
+            { value: "alert", label: `System alerts · ${count("alert")}` },
+          ]}
+        />
+      </div>
+      {!ranked.length && (
+        <Card><p className="text-[13px] text-muted">No {filter === "report" ? "farmer reports" : "system alerts"} await review.</p></Card>
+      )}
+      {ranked.map(({ item, rank }) => {
+        const source = SOURCE[item.kind];
+        return (
+        <Card key={`${item.kind}-${item.id}`} className={source.edge}>
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[12px] font-semibold text-muted tabular-nums">#{index + 1}</span>
+            <span className="text-[12px] font-semibold text-muted tabular-nums">#{rank}</span>
+            <Chip className={source.chip}>
+              <source.Icon className="h-3 w-3" strokeWidth={2} aria-hidden="true" />
+              {source.label}
+            </Chip>
             <PriorityChip priority={item.priority} />
             <EvidenceChip status={item.evidence_status} />
-            <Chip>{item.kind === "report" ? "Farmer report" : "Watch alert"}</Chip>
             {item.is_demo && <DemoChip />}
           </div>
           <h3 className="mt-2 text-[14px] font-semibold text-ink">{item.title}</h3>
@@ -112,7 +154,8 @@ function Queue({ items, error }: { items: QueueItem[] | null; error: string | nu
           </div>
           {dismissing === item.id && <Dismiss id={item.id} onDone={() => setDismissing(null)} />}
         </Card>
-      ))}
+        );
+      })}
       {task && <TaskDialog target={task} onClose={() => setTask(null)} />}
     </>
   );
@@ -163,13 +206,13 @@ function Tasks({ tasks, error }: { tasks: InspectionTask[] | null; error: string
           <div className="flex flex-wrap items-center gap-1.5">
             <PriorityChip priority={t.priority} />
             <Chip>{TASK_STATUS_LABEL[t.status]}</Chip>
+            <DueChip dueOn={t.due_on} status={t.status} />
             {t.outcome && <Chip className="border-ok/50 text-ok">{OUTCOME_LABEL[t.outcome.result]}</Chip>}
             {t.is_demo && <DemoChip />}
           </div>
           <h3 className="mt-2 text-[14px] font-semibold text-ink">{t.id}: {t.reason}</h3>
           <p className="text-[12px] text-muted">
             {t.district} · cell {t.h3_cell} · {t.assigned_to_name ? `assigned to ${t.assigned_to_name}` : "unassigned"}
-            {t.due_on && ` · due ${t.due_on}`}
           </p>
           {t.status === "NEW" && (
             <div className="mt-2 flex flex-wrap items-center gap-2">

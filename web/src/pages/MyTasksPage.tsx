@@ -7,9 +7,10 @@ import type { CropCondition, CropId, InspectionTask, OutcomeCreate, OutcomeResul
 import { Button, Field } from "../ui/primitives";
 import { useSession } from "../shell/useSession";
 import {
-  Card, Chip, CROP_LABEL, DemoChip, ErrorLine, errorText, fieldClass, Notice, OUTCOME_LABEL, PageBody, PriorityChip,
-  TASK_STATUS_LABEL, useLoad,
+  Card, Chip, CROP_LABEL, DemoChip, DueChip, ErrorLine, errorText, fieldClass, Notice, OUTCOME_LABEL, PageBody,
+  PriorityChip, TASK_STATUS_LABEL, useLoad,
 } from "../ops/ui";
+import { GrowthStageSelect } from "../ops/GrowthStageSelect";
 import { History } from "./FieldOpsPage";
 
 const OUTCOME_HELP: Record<OutcomeResult, string> = {
@@ -53,13 +54,13 @@ function TaskCard({ task }: { task: InspectionTask }) {
       <div className="flex flex-wrap items-center gap-1.5">
         <PriorityChip priority={task.priority} />
         <Chip>{TASK_STATUS_LABEL[task.status]}</Chip>
+        <DueChip dueOn={task.due_on} status={task.status} />
         {task.outcome && <Chip className="border-ok/50 text-ok">{OUTCOME_LABEL[task.outcome.result]}</Chip>}
         {task.is_demo && <DemoChip />}
       </div>
       <h3 className="mt-2 text-[14px] font-semibold text-ink">{task.id}: {task.reason}</h3>
       <p className="text-[12px] text-muted">
         {task.district} · {task.latitude.toFixed(4)}, {task.longitude.toFixed(4)} · cell {task.h3_cell}
-        {task.due_on && ` · due ${task.due_on}`}
       </p>
       <a className="text-[12px] font-medium text-accent underline" target="_blank" rel="noreferrer"
          href={`https://www.openstreetmap.org/?mlat=${task.latitude}&mlon=${task.longitude}#map=16/${task.latitude}/${task.longitude}`}>
@@ -111,7 +112,7 @@ function OutcomeForm({ task, onDone }: { task: InspectionTask; onDone: () => voi
     setBusy(true);
     setError(null);
     try {
-      await api.recordOutcome(task.id, value);
+      await api.recordOutcome(task.id, { ...value, growth_stage: value.growth_stage?.trim() || null });
       changed();
       onDone();
     } catch (e) {
@@ -137,12 +138,14 @@ function OutcomeForm({ task, onDone }: { task: InspectionTask; onDone: () => voi
       </fieldset>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Crop observed">
-          <select className={fieldClass} value={value.observed_crop} onChange={(e) => set("observed_crop", e.target.value as CropId)}>
+          <select className={fieldClass} value={value.observed_crop}
+                  onChange={(e) => setValue((s) => ({ ...s, observed_crop: e.target.value as CropId, growth_stage: null }))}>
             {Object.entries(CROP_LABEL).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
           </select>
         </Field>
         <Field label="Growth stage">
-          <input className={fieldClass} placeholder="e.g. grain filling" onChange={(e) => set("growth_stage", text(e.target.value))} />
+          <GrowthStageSelect key={value.observed_crop} crop={value.observed_crop} audience="officer"
+                             value={value.growth_stage} onChange={(stage) => set("growth_stage", stage)} />
         </Field>
         <Field label="Crop condition">
           <select className={fieldClass} value={value.crop_condition} onChange={(e) => set("crop_condition", e.target.value as CropCondition)}>

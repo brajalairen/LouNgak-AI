@@ -64,6 +64,11 @@ describe("pages render real server responses", () => {
     const text = await render(FieldOpsPage, "district-bishnupur");
     expect(text).toContain("Review queue");
     expect(text).toContain("Farmer report: unverified until inspected.");
+    // One ranked queue, each item marked by where it came from, with a filter by source.
+    expect(text).toMatch(/All · \d+/);
+    expect(text).toMatch(/Farmer reports · \d+/);
+    expect(text).toMatch(/System alerts · \d+/);
+    expect(text).toContain("System alert");
   });
 
   it("My inspections, My reports and the Crop Atlas", async () => {

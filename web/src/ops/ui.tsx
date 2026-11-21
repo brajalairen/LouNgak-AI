@@ -2,7 +2,7 @@
  *  printed in words next to any colour, so nothing depends on colour alone. */
 
 import { useEffect, useState, type ReactNode } from "react";
-import { FlaskConical } from "lucide-react";
+import { CalendarClock, FlaskConical } from "lucide-react";
 import { ApiError } from "../state/api";
 import type { Priority } from "../state/types";
 import { cx } from "../ui/primitives";
@@ -104,6 +104,43 @@ export function DemoChip() {
     <Chip className="border-warn/60 bg-warn/10 text-warn" title="Demonstration record, not real data">
       <FlaskConical className="h-3 w-3" strokeWidth={2} aria-hidden="true" />
       Demo
+    </Chip>
+  );
+}
+
+export type DueTone = "overdue" | "soon" | "later" | "closed";
+
+/** How an inspection's due date reads today: overdue, due today or tomorrow, a later date, or no longer
+ *  pressing because the inspection is closed. Dates are compared as local calendar days. */
+export function dueState(dueOn: string, status: string, today: Date = new Date()): { tone: DueTone; text: string } {
+  const [y, m, d] = dueOn.split("-").map(Number);
+  if (!y || !m || !d) return { tone: "later", text: `Due ${dueOn}` };
+  const due = new Date(y, m - 1, d);
+  const label = due.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  if (status === "COMPLETED" || status === "CANCELLED") return { tone: "closed", text: `Due ${label}` };
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const days = Math.round((due.getTime() - start.getTime()) / 86_400_000);
+  if (days < 0) return { tone: "overdue", text: `Overdue · ${-days} day${days === -1 ? "" : "s"}` };
+  if (days === 0) return { tone: "soon", text: "Due today" };
+  if (days === 1) return { tone: "soon", text: "Due tomorrow" };
+  return { tone: "later", text: `Due ${label}` };
+}
+
+const DUE_TONE: Record<DueTone, string> = {
+  overdue: "border-danger/60 bg-danger/10 text-danger",
+  soon: "border-warn/60 bg-warn/10 text-warn",
+  later: "border-line-strong text-ink",
+  closed: "border-line-strong text-muted",
+};
+
+/** The inspection's due date as a chip, coloured by how close it is; nothing when no date was set. */
+export function DueChip({ dueOn, status }: { dueOn: string | null; status: string }) {
+  if (!dueOn) return null;
+  const { tone, text } = dueState(dueOn, status);
+  return (
+    <Chip className={DUE_TONE[tone]} title={`Due date: ${dueOn}`}>
+      <CalendarClock className="h-3 w-3" strokeWidth={2} aria-hidden="true" />
+      {text}
     </Chip>
   );
 }
