@@ -78,6 +78,10 @@
   --color-warn: rgb(var(--warn));
   --color-ok: rgb(var(--ok));
   --radius-card: var(--radius);
+  /* One typeface everywhere, ids and cell codes included (the user's choice, 21 Nov 2026). */
+  --font-sans: "Times New Roman", Times, serif;
+  --font-serif: "Times New Roman", Times, serif;
+  --font-mono: "Times New Roman", Times, serif;
 }
 
 html,
@@ -90,10 +94,16 @@ body,
 body {
   background: rgb(var(--surface-sunken));
   color: rgb(var(--text));
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: "Times New Roman", Times, serif;
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
+}
+
+/* MapLibre's stylesheet sets its own font on the map and its controls (scale bar, attribution). */
+.maplibregl-map,
+.maplibregl-ctrl {
+  font-family: "Times New Roman", Times, serif;
 }
 
 /* One focus treatment everywhere, visible on both themes and over the map. */
