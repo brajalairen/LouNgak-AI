@@ -66,6 +66,8 @@ class OpsService:
             mode, computed = snapshot.mode, snapshot.computed_at
             if snapshot.mode == "snapshot":
                 notes.append(f"Derived from a frozen snapshot saved {snapshot.snapshot_saved_at}, not live data.")
+            elif snapshot.fallback_reason:
+                notes.append(snapshot.fallback_reason)
         except AgriUnavailable as error:
             derived = []
             notes.append(f"The risk assessment is unavailable, so no alerts could be derived: {error}")

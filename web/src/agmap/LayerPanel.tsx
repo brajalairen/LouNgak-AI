@@ -144,6 +144,11 @@ function Body() {
         {overview?.mode === "snapshot" && (
           <p className="text-accent" title={overview.fallback_reason ?? undefined}>Frozen SNAPSHOT of {formatTime(overview.snapshot_saved_at)}</p>
         )}
+        {overview?.mode === "live" && overview.snapshot_saved_at && (
+          <p className="text-accent" title={overview.fallback_reason ?? undefined}>
+            Some inputs from the SNAPSHOT of {formatTime(overview.snapshot_saved_at)}; field reports are live
+          </p>
+        )}
         {SHOW_LABELS && (
           <p className="tracking-wide text-faint uppercase">
             Prototype · {overview?.includes_sample_data ? "synthetic pest reports · " : ""}unvalidated thresholds

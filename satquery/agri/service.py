@@ -10,10 +10,13 @@ those caches only, labelled CACHED.
 Demo reliability:
 - `warm_in_background()` computes the first assessment when the server starts, so the first page
   does not wait for it.
-- `save_snapshot()` freezes a known-good assessment to a file. It is served instead of live data when
-  `agri_mode` is "snapshot", or automatically when the live assessment is missing inputs the snapshot
-  has (lower data completeness), for example when the venue network is down. Snapshot data is always
-  labelled SNAPSHOT with its time and the reason it is shown; it is never presented as live.
+- `save_snapshot()` freezes a known-good assessment to a file. The whole file is served instead of live
+  data when `agri_mode` is "snapshot" or when the live assessment fails outright. Otherwise the fallback
+  is per input (`fill_from_snapshot`): a weather or NDVI input that is unavailable live (for example the
+  venue network blocks Copernicus) is taken from the snapshot and the area is re-scored, while every
+  input that is available stays live. The app's own field reports therefore always count, so a farmer's
+  report still moves the score when the network is down. Snapshot data is always labelled SNAPSHOT with
+  its time and the reason it is shown; it is never presented as live.
 """
 
 import json
@@ -24,6 +27,7 @@ from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
+from satquery.agri import risk
 from satquery.agri.areas import demo_areas, load_areas
 from satquery.agri.config import PestRulesConfig, RiskModelConfig, load_pest_rules, load_risk_model
 from satquery.agri.models import MonitoredArea, RiskAssessment
@@ -32,8 +36,10 @@ from satquery.settings import Settings, load_settings
 
 log = logging.getLogger(__name__)
 SNAPSHOT_VERSION = 1
-FALLBACK_MARGIN = 0.05  # live completeness this far below the snapshot's counts as "missing inputs"
 REFRESH_RETRY_S = 60.0  # after a failed background refresh, wait this long before trying again
+# Inputs that can come from the frozen snapshot when they are unavailable live. Field reports are never among
+# them: they come from the app's own database, which is always reachable, and must always be current.
+FILLABLE = ("weather_pest", "ndvi_anomaly")
 
 
 @dataclass(frozen=True)
@@ -44,9 +50,9 @@ class Snapshot:
     model: RiskModelConfig
     computed_at: str  # ISO UTC
     offline: bool
-    mode: str = "live"  # "live", or "snapshot" when a frozen snapshot is served
-    snapshot_saved_at: str | None = None
-    fallback_reason: str | None = None
+    mode: str = "live"  # "live", or "snapshot" when the whole frozen snapshot is served
+    snapshot_saved_at: str | None = None  # set when the snapshot is served whole or fills some live inputs
+    fallback_reason: str | None = None  # why: set in both cases (mode "live" with a reason = some inputs filled)
     notes: list[str] = field(default_factory=list)
 
     def assessment(self, area_id: str) -> RiskAssessment | None:
@@ -55,10 +61,6 @@ class Snapshot:
 
 class AgriUnavailable(Exception):
     """The assessment could not be produced at all (for example an invalid areas file)."""
-
-
-def mean_completeness(assessments: list[RiskAssessment]) -> float:
-    return sum(a.confidence.data_completeness for a in assessments) / len(assessments) if assessments else 0.0
 
 
 def write_snapshot(snapshot: Snapshot, path: Path) -> Path:
@@ -100,6 +102,52 @@ def read_snapshot(path: Path, rules: PestRulesConfig, model: RiskModelConfig, re
     return Snapshot(areas=areas, assessments=assessments, rules=rules, model=model,
                     computed_at=record["computed_at"], offline=bool(record.get("offline")), mode="snapshot",
                     snapshot_saved_at=saved_at, fallback_reason=reason)
+
+
+def fill_from_snapshot(live: Snapshot, frozen: Snapshot) -> Snapshot:
+    """The live assessment, with each weather or NDVI input that is unavailable live taken from the frozen
+    snapshot (already labelled SNAPSHOT) and the area re-scored.
+
+    An input that is available live is never replaced, and the report factor is never taken from the
+    snapshot, so new farmer reports and inspection outcomes keep moving the score while a provider is down.
+    Returns `live` unchanged when nothing was filled. Pest evaluations follow the weather they came from.
+    """
+    old = {a.area_id: a for a in frozen.assessments}
+    assessments, filled = [], {}
+    for a in live.assessments:
+        before = old.get(a.area_id)
+        area = live.areas.get(a.area_id)
+        if before is None or area is None:
+            assessments.append(a)
+            continue
+        old_factors = {f.id: f for f in before.factors}
+        factors, pests, used = [], a.pests, []
+        for factor in a.factors:
+            stored = old_factors.get(factor.id)
+            if factor.id in FILLABLE and factor.score is None and stored is not None and stored.score is not None:
+                note = (f"Taken from the frozen snapshot saved {frozen.snapshot_saved_at}, because it is not available "
+                        f"live ({factor.unavailable_reason or 'unavailable'}).")
+                factors.append(stored.model_copy(update={"reasons": [note, *stored.reasons]}))
+                used.append(factor.id)
+                if factor.id == "weather_pest":
+                    pests = before.pests
+            else:
+                factors.append(factor)
+        if not used:
+            assessments.append(a)
+            continue
+        assessments.append(risk.combine(area, factors, pests, live.rules, live.model, as_of=a.as_of,
+                                        district_context=a.district_context))
+        for factor_id in used:
+            filled[factor_id] = filled.get(factor_id, 0) + 1
+    if not filled:
+        return live
+    what = "; ".join(f"{risk.FACTOR_NAMES[k].lower()} for {n} area(s)" for k, n in filled.items())
+    reason = (f"Some inputs could not be fetched live, so they come from the frozen snapshot saved "
+              f"{frozen.snapshot_saved_at} and are labelled SNAPSHOT: {what}. Everything else, including field "
+              "reports, is live.")
+    return replace(live, assessments=risk.rank(assessments), snapshot_saved_at=frozen.snapshot_saved_at,
+                   fallback_reason=reason)
 
 
 class AssessmentService:
@@ -172,15 +220,11 @@ class AssessmentService:
         live = Snapshot(areas={a.id: a for a in areas}, assessments=assessments, rules=rules, model=model,
                         offline=settings.agri_offline,
                         computed_at=datetime.now(timezone.utc).isoformat(timespec="seconds"))
-        # Prefer live data; fall back only when live is missing inputs the snapshot had.
+        # Prefer live data; take from the snapshot only the inputs that are unavailable live.
         frozen = self._frozen(rules, model, "")
-        if frozen is not None:
-            live_c, frozen_c = mean_completeness(assessments), mean_completeness(frozen.assessments)
-            if live_c + FALLBACK_MARGIN < frozen_c:
-                return replace(frozen, fallback_reason=(
-                    f"Live data is incomplete (mean data completeness {live_c:.0%}, snapshot {frozen_c:.0%}), "
-                    "for example a provider could not be reached; showing the frozen snapshot."))
-        return live
+        if frozen is None:
+            return live
+        return fill_from_snapshot(live, frozen)
 
     def snapshot(self) -> Snapshot:
         """The current assessment.
@@ -244,10 +288,13 @@ class AssessmentService:
                     return
 
     def save_snapshot(self, path: Path | None = None) -> Path:
-        """Freeze the current assessment (live) to the snapshot file. Refuses to re-freeze a snapshot."""
+        """Freeze the current assessment (live) to the snapshot file. Refuses to re-freeze a snapshot, or a live
+        assessment with inputs filled in from one: old data must not roll forward under a new date."""
         current = self._snapshot or self.snapshot()  # freeze what was just computed, not a fresh run
         if current.mode == "snapshot":
             raise AgriUnavailable("The current assessment is itself a snapshot; refusing to re-freeze it.")
+        if current.fallback_reason:
+            raise AgriUnavailable(f"Some inputs are not live, so the snapshot was not replaced: {current.fallback_reason}")
         return write_snapshot(current, path or self.snapshot_path())
 
     def warm_in_background(self) -> threading.Thread:
