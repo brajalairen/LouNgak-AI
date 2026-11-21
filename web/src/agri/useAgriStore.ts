@@ -29,6 +29,9 @@ interface AgriState {
   answer: AgriQueryResult | null;
 
   load: () => Promise<void>;
+  /** Re-fetch the assessment in the background (no loading state, no flicker), and the open drawer with it.
+   *  On failure the current assessment stays on screen; the next refresh tries again. */
+  refresh: () => Promise<void>;
   setFilter: (filter: LevelFilter) => void;
   setDistrict: (name: string | null) => void;
   select: (id: string | null) => void;
@@ -65,6 +68,21 @@ export const useAgriStore = create<AgriState>((set, get) => ({
       set({ overview, status: "ready" });
     } catch (error) {
       set({ status: "error", error: message(error, "The risk assessment could not be loaded.") });
+    }
+  },
+
+  refresh: async () => {
+    if (get().status !== "ready") return get().load(); // nothing shown yet, or an error: a normal load
+    const selected = get().selectedId;
+    const ticket = selected ? ++detailRequest : detailRequest;
+    const [overview, detail] = await Promise.allSettled([
+      api.agriOverview(),
+      selected ? api.agriArea(selected) : Promise.resolve(null),
+    ]);
+    if (overview.status === "fulfilled") set({ overview: overview.value });
+    // Only if the same drawer is still open and no newer request has started: never overwrite a newer choice.
+    if (detail.status === "fulfilled" && detail.value && ticket === detailRequest && get().selectedId === selected) {
+      set({ detail: detail.value, detailStatus: "ready", detailError: null });
     }
   },
 

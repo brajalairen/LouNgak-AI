@@ -96,6 +96,59 @@ describe("loading the assessment", () => {
   });
 });
 
+describe("refreshing after a report or an inspection outcome", () => {
+  it("replaces the assessment in the background, without a loading state", async () => {
+    const before = overview();
+    const after = { ...overview(), computed_at: "2026-10-08T05:30:00+00:00" };
+    useAgriStore.setState({ status: "ready", overview: before });
+    agriOverview.mockResolvedValue(after);
+    const pending = useAgriStore.getState().refresh();
+    expect(useAgriStore.getState().status).toBe("ready");
+    expect(useAgriStore.getState().overview).toBe(before);
+    await pending;
+    expect(useAgriStore.getState().overview).toBe(after);
+  });
+
+  it("keeps the current assessment on screen when the refresh fails", async () => {
+    const before = overview();
+    useAgriStore.setState({ status: "ready", overview: before });
+    agriOverview.mockRejectedValue(new ApiError("unreachable", 503));
+    await useAgriStore.getState().refresh();
+    expect(useAgriStore.getState()).toMatchObject({ status: "ready", overview: before, error: null });
+  });
+
+  it("refreshes the open drawer too, so the drawer and the map show the same score", async () => {
+    useAgriStore.setState({ status: "ready", overview: overview(), selectedId: "a", detailStatus: "ready",
+                            detail: { area: summary("a", { score: 0 }) } as AgriAreaDetail });
+    agriOverview.mockResolvedValue(overview());
+    agriArea.mockResolvedValue({ area: summary("a", { score: 9.5 }) } as AgriAreaDetail);
+    await useAgriStore.getState().refresh();
+    expect(agriArea).toHaveBeenCalledWith("a");
+    expect(useAgriStore.getState().detail?.area.score).toBe(9.5);
+  });
+
+  it("never overwrites a drawer the user switched to meanwhile", async () => {
+    let resolveOld!: (value: AgriAreaDetail) => void;
+    useAgriStore.setState({ status: "ready", overview: overview(), selectedId: "a" });
+    agriOverview.mockResolvedValue(overview());
+    agriArea.mockImplementationOnce(() => new Promise((resolve) => (resolveOld = resolve)));
+    agriArea.mockResolvedValueOnce({ area: summary("b") } as AgriAreaDetail);
+    const pending = useAgriStore.getState().refresh();
+    useAgriStore.getState().select("b");
+    await flush();
+    resolveOld({ area: summary("a") } as AgriAreaDetail);
+    await pending;
+    expect(useAgriStore.getState().detail?.area.id).toBe("b");
+  });
+
+  it("is a normal load when nothing is shown yet", async () => {
+    const data = overview();
+    agriOverview.mockResolvedValue(data);
+    await useAgriStore.getState().refresh();
+    expect(useAgriStore.getState()).toMatchObject({ status: "ready", overview: data });
+  });
+});
+
 describe("the area drawer", () => {
   it("opens on select and loads that area's assessment", async () => {
     agriArea.mockResolvedValue({ area: summary("a") } as AgriAreaDetail);
