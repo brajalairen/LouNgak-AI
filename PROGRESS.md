@@ -11,7 +11,7 @@ updated since. Use it for history only.
 - **Committed:** the 18 Nov work below is one commit on that branch (19 Nov 2026, at the user's request: "feat: demo
   hardening and field reports drive the risk score"). The 19 Nov work was verified on Windows and committed on
   21 Nov 2026 as three commits (decision I, decision J, docs).
-- **Review:** `docs/REVIEW-2026-11-17.md`. Decisions so far: `docs/decisions.md` (A to J).
+- **Review:** `docs/REVIEW-2026-11-17.md`. Decisions so far: `docs/decisions.md` (A to K).
 
 ## Verification status
 
@@ -36,6 +36,24 @@ The end-to-end run on the real server, in the Bishnupur zone, in dry November we
 **This laptop:** Windows Smart App Control blocks `.venv\Scripts\python.exe` ("An Application Control policy has
 blocked this file"). Run Python through the base uv interpreter instead: the README section "Windows and Smart App
 Control" gives the command, and it was tested on 18 Nov. Do not switch Smart App Control off.
+
+## What changed on 21 Nov 2026 (web only; committed and pushed the same day)
+
+1. **Growth stage is a dropdown** on both the farmer's report and the officer's outcome form
+   (`web/src/ops/growthStages.ts`, `GrowthStageSelect.tsx`). The list follows the crop. Farmers get six plain
+   choices; officers get the detailed stages, grouped by phase. The names follow the Crop Atlas's SOURCED stages
+   (IRRI for rice and Chak-hao, Iowa State for maize), plus "Harvested" and "Other (type it)". It is optional, and
+   the API field stays free text.
+2. **Due dates are highlighted** on My inspections and the officers' Inspections tab: overdue (red), due today or
+   tomorrow (amber), otherwise the date; no highlight once an inspection is closed.
+3. **The review queue marks each item's source** with an icon chip ("Farmer report" / "System alert") and a thin
+   coloured edge, and has a filter: All · Farmer reports · System alerts. It remains one ranked queue
+   (decision K).
+
+4. **Typeface:** the whole interface uses Times New Roman (`web/src/index.css`), map controls and ids included.
+   The basemap's own place names are drawn by the tile provider and keep its font.
+
+Verified on Windows, 21 Nov: frontend 143 passed (134 + 9 new), typecheck clean, build OK. No backend change.
 
 ## What changed on 19 Nov 2026 (committed 21 Nov 2026)
 

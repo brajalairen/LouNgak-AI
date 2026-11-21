@@ -3,6 +3,17 @@
 Newest first. Each entry gives the date, the decision, and why. Older decisions (31 Oct 2026) are in
 `Context/progress.md` and `Context/refined_foundation.md` section 10.
 
+## 21 Nov 2026
+
+### K. One review queue, marked by source, with a filter
+
+Farmer reports and system alerts stay in one ranked queue. Each card shows its source (an icon chip and a thin
+coloured edge in the field-report or weather factor colour, never a priority colour), and a filter shows all,
+farmer reports only, or system alerts only. An item keeps its rank in the whole queue when filtered.
+
+**Why.** The queue's order is ranked across both kinds: a farmer's report is raised when a system alert covers the
+same zone. Two separate lists would hide that ranking and make officers check two places. (User's choice.)
+
 ## 19 Nov 2026
 
 ### I. The snapshot fills missing inputs; it never replaces live field reports
